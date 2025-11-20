@@ -11,12 +11,12 @@ export default function Home() {
       <h1 className="terminal-title">
         <span className="prompt">&gt;</span> Design with Claude<span className="blinking-cursor"></span>
       </h1>
-      
+
       {/* Subtitle */}
       <p className="hero-subtitle">
         Specialized AI agents for every design challenge + CLI tool that generates real code. From guidance to implementation, powered by Claude AI.
       </p>
-      
+
       {/* CTA Buttons */}
       <div className="cta-buttons">
         <button
@@ -32,7 +32,7 @@ export default function Home() {
           How It Works
         </button>
       </div>
-      
+
       {/* Code Example */}
       <div className="code-example">
         <div className="code-line">
@@ -59,17 +59,17 @@ export default function Home() {
     <>
       {/* Back button */}
       <div className="install-header">
-        <button 
-          onClick={() => setCurrentView('home')} 
+        <button
+          onClick={() => setCurrentView('home')}
           className="btn-back"
         >
           ← Back to Terminal
         </button>
       </div>
-      
+
       {/* Installation title */}
       <h2 className="install-title">Installation Instructions</h2>
-      
+
       {/* Installation sections */}
       <div className="install-sections">
         <div className="install-section">
@@ -179,8 +179,8 @@ export default function Home() {
         <div className="install-section">
           <h3 className="install-section-title">Dual System Overview</h3>
           <div className="code-example">
-            <pre style={{fontSize: '12px', lineHeight: '1.4', margin: 0, color: '#FFFFFF'}}>
-{`┌────────────────────────┬─────────────────────────┐
+            <pre style={{ fontSize: '12px', lineHeight: '1.4', margin: 0, color: '#FFFFFF' }}>
+              {`┌────────────────────────┬─────────────────────────┐
 │   28 DESIGN AGENTS     │   CLI GENERATOR         │
 │   Provide Expertise    │   Creates Real Code     │
 │   Give Guidance        │   Builds Components     │
@@ -197,8 +197,8 @@ export default function Home() {
             When you run a command, agents analyze your brief → select expert agents → guide generation → produce quality code with best practices built-in.
           </p>
           <div className="code-example">
-            <pre style={{fontSize: '11px', lineHeight: '1.4', margin: 0, color: '#FFFFFF'}}>
-{`Input: design-create from-brief "Modern SaaS landing"
+            <pre style={{ fontSize: '11px', lineHeight: '1.4', margin: 0, color: '#FFFFFF' }}>
+              {`Input: design-create from-brief "Modern SaaS landing"
                     ↓
               Brief Parser
                     ↓
@@ -215,18 +215,18 @@ export default function Home() {
         <div className="install-section">
           <h3 className="install-section-title">Agent Selection Examples</h3>
           <div className="code-example">
-            <div className="code-line" style={{marginBottom: '8px'}}>
+            <div className="code-line" style={{ marginBottom: '8px' }}>
               <span className="prompt">$</span>
               <span className="command">design-create component button</span>
             </div>
-            <div className="install-description" style={{marginLeft: '20px', marginBottom: '12px', fontSize: '13px', color: '#A0A0A0'}}>
+            <div className="install-description" style={{ marginLeft: '20px', marginBottom: '12px', fontSize: '13px', color: '#A0A0A0' }}>
               → Uses: ui-designer + accessibility-specialist
             </div>
-            <div className="code-line" style={{marginBottom: '8px'}}>
+            <div className="code-line" style={{ marginBottom: '8px' }}>
               <span className="prompt">$</span>
               <span className="command">design-create from-brief &quot;Healthcare dashboard&quot;</span>
             </div>
-            <div className="install-description" style={{marginLeft: '20px', fontSize: '13px', color: '#A0A0A0'}}>
+            <div className="install-description" style={{ marginLeft: '20px', fontSize: '13px', color: '#A0A0A0' }}>
               → Uses: dashboard-designer + healthcare-ux + accessibility-specialist
             </div>
           </div>
@@ -235,11 +235,11 @@ export default function Home() {
         <div className="install-section">
           <h3 className="install-section-title">Development Status</h3>
           <div className="code-example">
-            <div style={{fontSize: '13px', lineHeight: '1.6'}}>
-              <div style={{color: '#00FF88'}}>✅ Phase 1: CLI Foundation - Complete</div>
-              <div style={{color: '#0099FF'}}>🔄 Phase 2: Agent Integration - In Progress</div>
-              <div style={{color: '#888888'}}>⏳ Phase 3: Export System - Coming Soon</div>
-              <div style={{color: '#888888'}}>⏳ Phase 4: Figma Integration - Coming Soon</div>
+            <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
+              <div style={{ color: '#00FF88' }}>✅ Phase 1: CLI Foundation - Complete</div>
+              <div style={{ color: '#00FF88' }}>✅ Phase 2: Agent Integration - Complete</div>
+              <div style={{ color: '#0099FF' }}>🔄 Phase 3: Export System - In Progress</div>
+              <div style={{ color: '#888888' }}>⏳ Phase 4: Figma Integration - Coming Soon</div>
             </div>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function Home() {
             View on GitHub
           </a>
         </div>
-        
+
         {/* Terminal Content - Switches between views */}
         <div className={`terminal-content ${currentView !== 'home' ? 'install-view' : ''}`}>
           {currentView === 'home' && <HomeView />}
