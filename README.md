@@ -97,6 +97,21 @@ SYMBOLS USED:
 └  Branch/End       🧠  AI Decision
 ```
 
+## 💡 Why Use This? (vs Figma AI / V0)
+
+While tools like Figma AI are great for generating *visuals*, **Design with Claude** is built for **Engineering**.
+
+| Feature | Figma / V0 / Visual Tools | Design with Claude CLI |
+|---------|---------------------------|------------------------|
+| **Output** | "Pictures of code" or spaghetti code | **Production-ready, clean architecture** |
+| **Structure** | Single file / Copy-paste | **Full Repo Scaffolding** (Git, Jest, Linting) |
+| **Logic** | Hardcoded values | **Props, Variants, & Semantic Tokens** |
+| **Context** | "Here is the result" | **"Here is WHY"** (Agentic Reasoning) |
+| **Workflow** | Switch context to design tool | **Stay in your terminal** |
+
+### The "Code-First" Philosophy
+This tool treats design as a **dependency**. You don't draw a button; you `npm install` a design system. It generates mathematically consistent tokens, accessible contrast ratios, and component APIs that a Senior Engineer would approve.
+
 ## 🚀 Design Implementation Tool (CLI)
 
 **NEW**: The `design-create` CLI tool turns design briefs into actual implementations - code, components, and Figma files.

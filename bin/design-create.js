@@ -4,6 +4,8 @@ const { Command } = require('commander');
 const chalk = require('chalk');
 const program = new Command();
 
+const ErrorHandler = require('../src/utils/error-handler');
+
 program
   .name('design-create')
   .description('AI-powered design implementation tool that generates actual code, components, and Figma files from design briefs')
@@ -15,7 +17,8 @@ program
   .description('Initialize a new design project')
   .argument('[project-name]', 'name of the project', 'my-design-project')
   .option('-f, --framework <framework>', 'target framework (html, react, vue)', 'react')
-  .option('-s, --styling <styling>', 'styling approach (css, scss, styled-components)', 'css')
+  .option('-s, --styling <styling>', 'styling approach (css, scss, tailwind)', 'css')
+  .option('--typescript', 'enable typescript support', false)
   .action(async (projectName, options) => {
     try {
       console.log(chalk.blue('🎨 Initializing design project...'));
@@ -23,8 +26,7 @@ program
       await initProject(projectName, options);
       console.log(chalk.green(`✅ Project "${projectName}" initialized successfully!`));
     } catch (error) {
-      console.error(chalk.red('❌ Error initializing project:'), error.message);
-      process.exit(1);
+      ErrorHandler.handle(error);
     }
   });
 

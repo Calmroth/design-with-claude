@@ -1,18 +1,26 @@
 const chalk = require('chalk');
+const TokenGenerator = require('../generators/token-generator');
 
 async function generateTokens(options = {}) {
-  console.log(chalk.gray('This feature will be implemented in Phase 2'));
-  console.log(chalk.yellow('Options:'), JSON.stringify(options, null, 2));
+  console.log(chalk.blue('🎨 Generating design tokens...'));
 
-  // Placeholder implementation - will be enhanced in Phase 2
-  console.log(chalk.blue('🔄 Phase 2 Implementation Required:'));
-  console.log(chalk.gray('  - Design token generator'));
-  console.log(chalk.gray('  - Color palette generation'));
-  console.log(chalk.gray('  - Typography scale'));
-  console.log(chalk.gray('  - Spacing system'));
-  console.log(chalk.gray('  - Token export formats'));
+  try {
+    const projectPath = process.cwd();
+    const generator = new TokenGenerator(projectPath);
 
-  throw new Error('Feature not yet implemented - coming in Phase 2 (Week 2)');
+    // Default theme if not specified
+    const theme = {
+      mode: options.mode || 'light',
+      primaryColor: options.primary || '#3B82F6',
+      fontPairing: options.fonts || 'Inter/Roboto'
+    };
+
+    await generator.generate(theme);
+
+  } catch (error) {
+    console.error(chalk.red('Error generating tokens:'), error);
+    throw error;
+  }
 }
 
 module.exports = { generateTokens };

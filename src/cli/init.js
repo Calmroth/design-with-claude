@@ -1,6 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
+const ConfigValidator = require('../utils/config-validator');
 
 async function initProject(projectName = 'my-design-project', options = {}) {
   const projectPath = path.resolve(projectName);
@@ -22,11 +23,12 @@ async function initProject(projectName = 'my-design-project', options = {}) {
     await fs.ensureDir(path.join(projectPath, 'exports', 'figma'));
 
     // Generate project configuration
-    const config = {
+    const initialConfig = {
       name: projectName,
       version: '1.0.0',
       framework: options.framework || 'react',
       styling: options.styling || 'css',
+      typescript: options.typescript || false,
       tokens: {
         colorMode: 'hsl',
         spacing: '4px-base',
@@ -37,10 +39,10 @@ async function initProject(projectName = 'my-design-project', options = {}) {
       },
       components: {
         prefix: '',
-        typescript: true
+        typescript: options.typescript || false
       },
       export: {
-        formats: ['html', 'react', 'vue'],
+        formats: ['html', options.framework || 'react'],
         figma: {
           enabled: false,
           token: null
@@ -49,6 +51,10 @@ async function initProject(projectName = 'my-design-project', options = {}) {
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString()
     };
+
+    // Validate configuration
+    const validator = new ConfigValidator();
+    const config = validator.validate(initialConfig);
 
     await fs.writeJSON(
       path.join(projectPath, '.design-project', 'config.json'),

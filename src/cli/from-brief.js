@@ -1,19 +1,37 @@
 const chalk = require('chalk');
+const path = require('path');
+const AIOrchestrator = require('../ai-orchestrator/orchestrator');
+const TokenGenerator = require('../generators/token-generator');
+const ComponentGenerator = require('../generators/component-generator');
 
 async function generateFromBrief(brief, options = {}) {
-  console.log(chalk.gray('This feature will be implemented in Phase 2'));
-  console.log(chalk.yellow('Brief received:'), brief);
-  console.log(chalk.yellow('Options:'), JSON.stringify(options, null, 2));
+  console.log(chalk.blue(`🚀 Starting generation from brief: "${brief}"`));
 
-  // Placeholder implementation - will be enhanced in Phase 2
-  console.log(chalk.blue('🔄 Phase 2 Implementation Required:'));
-  console.log(chalk.gray('  - AI orchestrator integration'));
-  console.log(chalk.gray('  - Design brief parsing'));
-  console.log(chalk.gray('  - Component generation'));
-  console.log(chalk.gray('  - Token generation'));
-  console.log(chalk.gray('  - Layout assembly'));
+  try {
+    const projectPath = process.cwd();
 
-  throw new Error('Feature not yet implemented - coming in Phase 2 (Week 2)');
+    // 1. Initialize Orchestrator
+    const orchestrator = new AIOrchestrator();
+    const result = await orchestrator.processBrief(brief);
+
+    console.log(chalk.yellow('\n📋 Generation Plan:'));
+    console.log(chalk.gray(JSON.stringify(result.plan, null, 2)));
+
+    // 2. Generate Tokens
+    const tokenGenerator = new TokenGenerator(projectPath);
+    await tokenGenerator.generate(result.plan.theme);
+
+    // 3. Generate Components
+    const componentGenerator = new ComponentGenerator(projectPath);
+    await componentGenerator.generate(result.plan.components);
+
+    console.log(chalk.green('\n✨ Generation complete!'));
+    console.log(chalk.gray('Run `npm start` to view your project (coming in Phase 3)'));
+
+  } catch (error) {
+    console.error(chalk.red('Error generating from brief:'), error);
+    throw error;
+  }
 }
 
 module.exports = { generateFromBrief };
