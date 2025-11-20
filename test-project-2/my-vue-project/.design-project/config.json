@@ -1,0 +1,31 @@
+{
+  "name": "my-vue-project",
+  "version": "1.0.0",
+  "framework": "vue",
+  "styling": "tailwind",
+  "typescript": true,
+  "tokens": {
+    "colorMode": "hsl",
+    "spacing": "4px-base",
+    "typography": {
+      "scale": "modular",
+      "baseSize": 16
+    }
+  },
+  "components": {
+    "prefix": "",
+    "typescript": true
+  },
+  "export": {
+    "formats": [
+      "html",
+      "vue"
+    ],
+    "figma": {
+      "enabled": false,
+      "token": null
+    }
+  },
+  "createdAt": "2025-11-20T03:08:27.411Z",
+  "lastUpdated": "2025-11-20T03:08:27.412Z"
+}

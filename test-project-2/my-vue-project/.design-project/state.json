@@ -1,0 +1,19 @@
+{
+  "initialized": true,
+  "version": "1.0.0",
+  "tokens": {
+    "generated": false,
+    "lastGenerated": null
+  },
+  "components": {
+    "generated": [],
+    "lastGenerated": null
+  },
+  "layouts": {
+    "generated": [],
+    "lastGenerated": null
+  },
+  "exports": {
+    "lastExported": {}
+  }
+}

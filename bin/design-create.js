@@ -108,6 +108,45 @@ program
     }
   });
 
+// Layout command
+program
+  .command('layout')
+  .description('Generate a layout (landing-page, dashboard, documentation)')
+  .argument('<type>', 'layout type')
+  .option('-s, --sections <sections>', 'sections to include (comma-separated)')
+  .option('--sidebar', 'include sidebar (for dashboard)', true)
+  .action(async (type, options) => {
+    try {
+      console.log(chalk.blue(`📐 Generating ${type} layout...`));
+      const { generateLayout } = require('../src/cli/layout');
+      await generateLayout(type, options);
+      console.log(chalk.green(`✅ Layout "${type}" generated successfully!`));
+    } catch (error) {
+      console.error(chalk.red('❌ Error generating layout:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// Generate command (for icons and placeholders)
+program
+  .command('generate')
+  .description('Generate assets (icons, placeholders)')
+  .argument('<type>', 'asset type (icons, placeholders)')
+  .option('--set <set>', 'icon set (basic, social)', 'basic')
+  .option('--type <type>', 'placeholder type (image, avatar, logo, all)', 'all')
+  .option('--sizes <sizes>', 'sizes to generate (comma-separated)', 'sm,md,lg')
+  .action(async (type, options) => {
+    try {
+      console.log(chalk.blue(`🎨 Generating ${type}...`));
+      const { generateAssets } = require('../src/cli/generate');
+      await generateAssets(type, options);
+      console.log(chalk.green(`✅ ${type} generated successfully!`));
+    } catch (error) {
+      console.error(chalk.red(`❌ Error generating ${type}:`), error.message);
+      process.exit(1);
+    }
+  });
+
 // Global error handling
 process.on('unhandledRejection', (reason, promise) => {
   console.error(chalk.red('❌ Unhandled Rejection at:'), promise, chalk.red('reason:'), reason);

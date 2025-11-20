@@ -19,14 +19,17 @@ async function generateFromBrief(brief, options = {}) {
 
     // 2. Generate Tokens
     const tokenGenerator = new TokenGenerator(projectPath);
-    await tokenGenerator.generate(result.plan.theme);
+    const tokens = await tokenGenerator.generate(result.plan.theme);
 
-    // 3. Generate Components
+    // 3. Generate Components (with tokens)
     const componentGenerator = new ComponentGenerator(projectPath);
-    await componentGenerator.generate(result.plan.components);
+    await componentGenerator.generate(result.plan.components, tokens, options);
 
     console.log(chalk.green('\n✨ Generation complete!'));
-    console.log(chalk.gray('Run `npm start` to view your project (coming in Phase 3)'));
+    console.log(chalk.gray('Files generated:'));
+    console.log(chalk.gray('  - tokens/tokens.json'));
+    console.log(chalk.gray('  - tokens/variables.css'));
+    console.log(chalk.gray(`  - ${result.plan.components.length} components in src/components/`));
 
   } catch (error) {
     console.error(chalk.red('Error generating from brief:'), error);

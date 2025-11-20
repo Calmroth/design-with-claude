@@ -128,11 +128,24 @@ node bin/design-create.js init my-project
 # Navigate to your project
 cd my-project
 
-# Generate from brief (coming in Phase 2)
+# Generate design tokens
+design-create tokens --mode light --primary "#6366F1"
+
+# Generate from brief
 design-create from-brief "Modern SaaS landing page with pricing section"
 
-# Generate specific components (coming in Phase 2)
-design-create component button --variants primary,secondary
+# Generate specific components
+design-create component button
+design-create component input
+design-create component header
+
+# Generate layouts
+design-create layout landing-page
+design-create layout dashboard
+
+# Generate assets
+design-create generate icons --set basic
+design-create generate placeholders --type all
 
 # Export to different formats (coming in Phase 3)
 design-create export react
@@ -141,16 +154,59 @@ design-create export figma --figma-token YOUR_TOKEN
 
 ### Available Commands
 
-- ✅ `design-create init [project-name]` - Initialize new design project
-- 🔄 `design-create from-brief <brief>` - Generate from design brief *(Phase 2)*
-- 🔄 `design-create component <name>` - Generate specific component *(Phase 2)*
-- 🔄 `design-create tokens` - Generate design tokens *(Phase 2)*
-- 🔄 `design-create export <format>` - Export to HTML/React/Vue/Figma *(Phase 3)*
+#### ✅ Project Initialization
+- `design-create init [project-name]` - Initialize new design project with complete structure
+
+#### ✅ Design Token Generation
+- `design-create tokens` - Generate complete design token system
+  - Full color scales (50-900) for primary, secondary, neutral
+  - Semantic colors (success, warning, error, info)
+  - Typography system (10 sizes, 9 weights, letter spacing)
+  - Spacing system (18 values)
+  - Shadow system (8 levels)
+  - Border radius tokens
+
+#### ✅ Component Generation
+- `design-create component <name>` - Generate production-ready components
+  - **Button**: 4 variants × 4 sizes × 5 states
+  - **Forms**: Input, Select, Checkbox, Radio, Textarea
+  - **Navigation**: Header, Sidebar, Breadcrumb
+  - **Interactive**: Modal, Dropdown, Tooltip, Tabs
+  - **Basic**: Card, Hero, FeatureSection
+
+#### ✅ Layout Generation
+- `design-create layout <type>` - Generate complete page layouts
+  - `landing-page` - Hero, features, pricing, CTA sections
+  - `dashboard` - Sidebar + main content area
+  - `documentation` - Sidebar, breadcrumbs, table of contents
+
+#### ✅ Asset Generation
+- `design-create generate icons` - Generate SVG icon sets
+  - Basic set: 20 common icons
+  - Social set: 4 social media icons
+  - Auto-generated React components
+- `design-create generate placeholders` - Generate placeholder assets
+  - Image placeholders (4 sizes)
+  - Avatar placeholders (4 sizes)
+  - Logo placeholder
+
+#### ✅ Brief-to-Code
+- `design-create from-brief <brief>` - Generate complete design from description
+  - AI-powered brief parsing
+  - Automatic agent selection
+  - Complete token + component + layout generation
+
+#### 🔄 Export System (Phase 3)
+- `design-create export <format>` - Export to HTML/React/Vue/Figma *(Coming Soon)*
 
 ### Implementation Status
 
-- ✅ **Phase 1 Day 1 Complete**: CLI framework, project initialization
-- 🔄 **Phase 2**: Component & token generation *(Week 2)*
+- ✅ **Phase 1 Complete**: CLI framework, project initialization, template system
+- ✅ **Phase 2 Complete**: Tokens, components, layouts, and asset generation
+  - Enhanced token system with full color scales
+  - 13+ production-ready components
+  - 3 complete layout templates
+  - 24 icons + placeholder generators
 - 🔄 **Phase 3**: Multi-format export system *(Week 3)*
 - 🔄 **Phase 4**: Figma integration *(Week 4)*
 
