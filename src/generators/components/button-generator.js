@@ -2,45 +2,60 @@ const chalk = require('chalk');
 
 class ButtonGenerator {
     generate(tokens, options = {}) {
-        const variants = options.variants || ['primary', 'secondary', 'ghost', 'outline'];
+        const guidance = options.guidance || {};
+        const componentGuidance = guidance.componentGuidance || {};
+
+        const variants = options.variants
+            || componentGuidance.buttonVariants
+            || ['primary', 'secondary', 'ghost', 'outline'];
         const sizes = options.sizes || ['sm', 'md', 'lg'];
 
         console.log(chalk.gray(`  - Generating Button with ${variants.length} variants, ${sizes.length} sizes`));
 
+        const ariaEnhancements = (componentGuidance.accessibilityRequirements || []).length > 0;
+        const transitionValue = (componentGuidance.transitions || {}).hover || '0.2s ease-in-out';
+
         return {
             name: 'Button',
-            component: this.generateReactComponent(),
-            styles: this.generateStyles(tokens, variants, sizes),
+            component: this.generateReactComponent(ariaEnhancements),
+            styles: this.generateStyles(tokens, variants, sizes, {
+                borderRadius: componentGuidance.borderRadius || 'md',
+                transition: transitionValue
+            }),
             variants,
             sizes
         };
     }
 
-    generateReactComponent() {
+    generateReactComponent(ariaEnhancements = false) {
+        const ariaProps = ariaEnhancements
+            ? `\n      aria-busy={loading}\n      aria-disabled={disabled}`
+            : '';
+
         return `import React from 'react';
 import './Button.css';
 
-export const Button = ({ 
-  children, 
-  variant = 'primary', 
+export const Button = ({
+  children,
+  variant = 'primary',
   size = 'md',
   disabled = false,
   loading = false,
   icon = null,
   onClick,
   type = 'button',
-  ...props 
+  ...props
 }) => {
   return (
     <button
       className={\`btn btn-\${variant} btn-\${size} \${disabled ? 'btn-disabled' : ''} \${loading ? 'btn-loading' : ''}\`}
       disabled={disabled || loading}
       onClick={onClick}
-      type={type}
+      type={type}${ariaProps}
       {...props}
     >
       {loading && (
-        <span className="btn-spinner">
+        <span className="btn-spinner" aria-hidden="true">
           <svg className="spinner" viewBox="0 0 24 24">
             <circle className="spinner-circle" cx="12" cy="12" r="10" />
           </svg>
@@ -53,7 +68,8 @@ export const Button = ({
 };`;
     }
 
-    generateStyles(tokens, variants, sizes) {
+    generateStyles(tokens, variants, sizes, styleOptions = {}) {
+        const transition = styleOptions.transition || '0.2s ease-in-out';
         let css = `/* Button Base Styles */
 .btn {
   display: inline-flex;
@@ -64,7 +80,7 @@ export const Button = ({
   font-weight: var(--font-medium);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all ${transition};
   text-decoration: none;
   white-space: nowrap;
 }
@@ -195,7 +211,31 @@ export const Button = ({
 `
         };
 
-        return styles[variant] || '';
+        if (!styles[variant]) {
+            // Generate a generic variant for agent-suggested variants (e.g. destructive)
+            if (variant === 'destructive') {
+                return `
+.btn-destructive {
+  background-color: var(--color-error-500, #EF4444);
+  color: var(--color-neutral-50);
+  border-color: var(--color-error-500, #EF4444);
+}
+
+.btn-destructive:hover:not(.btn-disabled) {
+  background-color: var(--color-error-600, #DC2626);
+  border-color: var(--color-error-600, #DC2626);
+}
+
+.btn-destructive:active:not(.btn-disabled) {
+  background-color: var(--color-error-700, #B91C1C);
+  border-color: var(--color-error-700, #B91C1C);
+}
+`;
+            }
+            return '';
+        }
+
+        return styles[variant];
     }
 
     getSizeStyles(size, tokens) {

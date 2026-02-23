@@ -8,15 +8,18 @@ class TokenGenerator {
         this.tokensPath = path.join(projectPath, 'tokens');
     }
 
-    async generate(theme) {
+    async generate(theme, guidance = {}) {
         console.log(chalk.blue('🎨 Generating design tokens...'));
 
         const tokens = {
-            colors: this.generateColorTokens(theme),
-            typography: this.generateTypographyTokens(theme),
+            colors: this.generateColorTokens(theme, guidance.colorGuidance || {}),
+            typography: this.generateTypographyTokens(theme, guidance.typographyGuidance || {}),
             spacing: this.generateSpacingTokens(),
             shadows: this.generateShadowTokens(),
-            borderRadius: this.generateBorderRadiusTokens()
+            borderRadius: this.generateBorderRadiusTokens(),
+            ...(guidance.componentGuidance && guidance.componentGuidance.animationDurations
+                ? { motion: this.generateMotionTokens(guidance.componentGuidance) }
+                : {})
         };
 
         // Write JSON tokens
@@ -35,7 +38,7 @@ class TokenGenerator {
         return tokens;
     }
 
-    generateColorTokens(theme) {
+    generateColorTokens(theme, colorGuidance) {
         const primaryColor = theme.primaryColor || '#3B82F6';
         const mode = theme.mode || 'light';
 
@@ -133,7 +136,26 @@ class TokenGenerator {
         return hex.length === 1 ? '0' + hex : hex;
     }
 
-    generateTypographyTokens(theme) {
+    generateMotionTokens(componentGuidance) {
+        const durations = componentGuidance.animationDurations || {};
+        const transitions = componentGuidance.transitions || {};
+        return {
+            duration: {
+                micro: durations.micro || '150ms',
+                short: durations.short || '200ms',
+                medium: durations.medium || '300ms',
+                long: durations.long || '400ms'
+            },
+            easing: {
+                default: transitions.easing || 'cubic-bezier(0.4, 0, 0.2, 1)',
+                in: 'cubic-bezier(0.4, 0, 1, 1)',
+                out: 'cubic-bezier(0, 0, 0.2, 1)',
+                inOut: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            }
+        };
+    }
+
+    generateTypographyTokens(theme, typographyGuidance) {
         const [heading, body] = (theme.fontPairing || 'Inter/Roboto').split('/');
         return {
             fontFamily: {
@@ -287,6 +309,18 @@ class TokenGenerator {
         Object.entries(tokens.borderRadius).forEach(([key, value]) => {
             css += `  --radius-${key}: ${value};\n`;
         });
+
+        // Motion (if present)
+        if (tokens.motion) {
+            css += '\n  /* Motion - Durations */\n';
+            Object.entries(tokens.motion.duration).forEach(([key, value]) => {
+                css += `  --duration-${key}: ${value};\n`;
+            });
+            css += '\n  /* Motion - Easing */\n';
+            Object.entries(tokens.motion.easing).forEach(([key, value]) => {
+                css += `  --easing-${key}: ${value};\n`;
+            });
+        }
 
         css += '}\n';
         return css;

@@ -1,533 +1,282 @@
 # Design with Claude - AI-Powered Design Tools & Agents
 
-A dual-purpose design toolkit that includes:
-1. **Design Implementation Tool (CLI)** - Generate actual code, components, and Figma files from design briefs
-2. **Design Agents Collection** - 28 specialized Claude agents for comprehensive design guidance
-
-Transform design ideas into working implementations or get expert AI guidance for any design challenge.
-
-## 🧠 How It Works: Intelligent Agent-Powered Generation
-
-Our toolkit combines the expertise of 28 design agents with an intelligent CLI that generates actual code:
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                   DESIGN WITH CLAUDE                          │
-├────────────────────────┬─────────────────────────────────────┤
-│   GUIDANCE & ADVICE    │      ACTUAL GENERATION              │
-│                        │                                      │
-│   28 Design Agents     │    CLI Implementation Tool          │
-│   ├── UI Designer      │    ├── design-create init          │
-│   ├── UX Researcher    │    ├── design-create from-brief    │
-│   ├── Brand Strategist │    ├── design-create component     │
-│   └── 25 more agents   │    └── design-create export        │
-│                        │                                      │
-│   OUTPUT: Expertise    │    OUTPUT: Real Files & Code       │
-└────────────────────────┴─────────────────────────────────────┘
-```
-
-### The Magic: Agent-Guided Generation
-
-When you run a command, here's what happens behind the scenes:
-
-```
-USER: "design-create from-brief 'Modern SaaS landing page'"
-                            │
-                            ▼
-┌───────────────────────────────────────────────────────────┐
-│                    BRIEF PARSER                            │
-│  Analyzes: "Modern SaaS landing page"                      │
-│  Identifies: • Style: Modern • Type: Landing • Industry: SaaS │
-└───────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌───────────────────────────────────────────────────────────┐
-│                  AI ORCHESTRATOR                           │
-│  Selects Agents: → web-designer (primary)                 │
-│                  → ui-designer (components)                │
-│                  → brand-strategist (style)                │
-└───────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌───────────────────────────────────────────────────────────┐
-│                  AGENT CONSULTATION                        │
-│  web-designer: "Use hero-features-pricing structure"       │
-│  ui-designer: "Implement card-based feature sections"      │
-│  brand-strategist: "Apply modern, minimal color palette"   │
-└───────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌───────────────────────────────────────────────────────────┐
-│                     GENERATORS                             │
-│  • Token Generator → Creates colors.css, typography.css    │
-│  • Component Gen → Creates Button.jsx, Card.jsx, Hero.jsx  │
-│  • Layout Gen → Creates landing-page.html                  │
-└───────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌───────────────────────────────────────────────────────────┐
-│                    FINAL OUTPUT                            │
-│  ✅ tokens/colors.css       - Design tokens               │
-│  ✅ components/Hero.jsx     - React components            │
-│  ✅ layouts/landing.html    - Complete layout             │
-│  ✅ exports/figma/          - Figma file (Phase 4)        │
-└───────────────────────────────────────────────────────────┘
-```
-
-**Key Insight**: The CLI doesn't just generate code mechanically—it uses the collective knowledge of 28 design experts to create thoughtful, professional implementations.
-
-### Agent Selection Matrix
-
-Different commands automatically select the right experts:
-
-| Command | Primary Agent | Supporting Agents | Output |
-|---------|---------------|-------------------|--------|
-| `from-brief "landing page"` | web-designer | ui-designer, brand-strategist | Complete landing page |
-| `component button` | ui-designer | design-system-architect | Button with variants |
-| `tokens --style modern` | design-system-architect | brand-strategist | Design token files |
-| `export figma` | ui-designer | visual-designer | Figma design file |
-
-### Visual Legend
-```
-SYMBOLS USED:
-━━━━━━━━━━━━━
-→  Data flow        ✅  Completed
-▼  Process step     🔄  In Progress
-│  Connection       ⏳  Planned
-└  Branch/End       🧠  AI Decision
-```
-
-## 💡 Why Use This? (vs Figma AI / V0)
-
-While tools like Figma AI are great for generating *visuals*, **Design with Claude** is built for **Engineering**.
-
-| Feature | Figma / V0 / Visual Tools | Design with Claude CLI |
-|---------|---------------------------|------------------------|
-| **Output** | "Pictures of code" or spaghetti code | **Production-ready, clean architecture** |
-| **Structure** | Single file / Copy-paste | **Full Repo Scaffolding** (Git, Jest, Linting) |
-| **Logic** | Hardcoded values | **Props, Variants, & Semantic Tokens** |
-| **Context** | "Here is the result" | **"Here is WHY"** (Agentic Reasoning) |
-| **Workflow** | Switch context to design tool | **Stay in your terminal** |
-
-### The "Code-First" Philosophy
-This tool treats design as a **dependency**. You don't draw a button; you `npm install` a design system. It generates mathematically consistent tokens, accessible contrast ratios, and component APIs that a Senior Engineer would approve.
-
-## 🚀 Design Implementation Tool (CLI)
-
-**NEW**: The `design-create` CLI tool turns design briefs into actual implementations - code, components, and Figma files.
-
-### Quick Start
+A code-first design toolkit that turns natural language briefs into production-ready implementations, guided by 29 specialized design agents.
 
 ```bash
-# Install dependencies
-npm install
-
-# Initialize a new design project
-node bin/design-create.js init my-project
-
-# Navigate to your project
-cd my-project
-
-# Generate design tokens
-design-create tokens --mode light --primary "#6366F1"
-
-# Generate from brief
-design-create from-brief "Modern SaaS landing page with pricing section"
-
-# Generate specific components
-design-create component button
-design-create component input
-design-create component header
-
-# Generate layouts
-design-create layout landing-page
-design-create layout dashboard
-
-# Generate assets
-design-create generate icons --set basic
-design-create generate placeholders --type all
-
-# Export to different formats (coming in Phase 3)
-design-create export react
-design-create export figma --figma-token YOUR_TOKEN
+design-create from-brief "Healthcare dashboard with accessibility"
 ```
 
-### Available Commands
+The CLI dynamically selects the right design experts for your brief, extracts structured guidance from their knowledge, and uses it to generate tokens, components, and layouts that reflect real design expertise.
 
-#### ✅ Project Initialization
-- `design-create init [project-name]` - Initialize new design project with complete structure
+## How It Works
 
-#### ✅ Design Token Generation
-- `design-create tokens` - Generate complete design token system
-  - Full color scales (50-900) for primary, secondary, neutral
-  - Semantic colors (success, warning, error, info)
-  - Typography system (10 sizes, 9 weights, letter spacing)
-  - Spacing system (18 values)
-  - Shadow system (8 levels)
-  - Border radius tokens
-
-#### ✅ Component Generation
-- `design-create component <name>` - Generate production-ready components
-  - **Button**: 4 variants × 4 sizes × 5 states
-  - **Forms**: Input, Select, Checkbox, Radio, Textarea
-  - **Navigation**: Header, Sidebar, Breadcrumb
-  - **Interactive**: Modal, Dropdown, Tooltip, Tabs
-  - **Basic**: Card, Hero, FeatureSection
-
-#### ✅ Layout Generation
-- `design-create layout <type>` - Generate complete page layouts
-  - `landing-page` - Hero, features, pricing, CTA sections
-  - `dashboard` - Sidebar + main content area
-  - `documentation` - Sidebar, breadcrumbs, table of contents
-
-#### ✅ Asset Generation
-- `design-create generate icons` - Generate SVG icon sets
-  - Basic set: 20 common icons
-  - Social set: 4 social media icons
-  - Auto-generated React components
-- `design-create generate placeholders` - Generate placeholder assets
-  - Image placeholders (4 sizes)
-  - Avatar placeholders (4 sizes)
-  - Logo placeholder
-
-#### ✅ Brief-to-Code
-- `design-create from-brief <brief>` - Generate complete design from description
-  - AI-powered brief parsing
-  - Automatic agent selection
-  - Complete token + component + layout generation
-
-#### 🔄 Export System (Phase 3)
-- `design-create export <format>` - Export to HTML/React/Vue/Figma *(Coming Soon)*
-
-### Implementation Status
-
-- ✅ **Phase 1 Complete**: CLI framework, project initialization, template system
-- ✅ **Phase 2 Complete**: Tokens, components, layouts, and asset generation
-  - Enhanced token system with full color scales
-  - 13+ production-ready components
-  - 3 complete layout templates
-  - 24 icons + placeholder generators
-- 🔄 **Phase 3**: Multi-format export system *(Week 3)*
-- 🔄 **Phase 4**: Figma integration *(Week 4)*
-
-### Generated Project Structure
-
-When you run `design-create init`, you get:
+Every brief flows through a four-stage pipeline:
 
 ```
-my-project/
-├── .design-project/          # Configuration and state
-│   ├── config.json          # Project configuration
-│   ├── state.json           # Generation state tracking
-│   └── templates/           # Custom templates
-├── src/                     # Generated source files
-│   ├── components/          # Generated components
-│   ├── layouts/             # Generated layouts
-│   └── assets/              # Generated assets
-├── tokens/                  # Design tokens (colors, typography, spacing)
-├── exports/                 # Export outputs
-│   ├── html/               # HTML/CSS exports
-│   ├── react/              # React components
-│   ├── vue/                # Vue components
-│   └── figma/              # Figma export data
-├── README.md               # Project documentation
-└── .gitignore             # Git ignore rules
+agents/*.md  →  AgentLoader  →  AgentSelector  →  AgentKnowledge  →  Generators
+                 (parse 29)     (score & pick)    (extract guidance)   (use it)
 ```
 
----
+### Stage 1: Parse the Brief
 
-## 🎨 Design Agents Collection
+The brief parser extracts structured signals from natural language:
 
-A comprehensive collection of 28 specialized design agents for Claude, providing expert guidance for every aspect of the design process. From UI/UX to brand strategy, these agents offer professional insights and best practices.
-
-## Prerequisites
-
-### For Design Implementation Tool
-- **Node.js**: v16.0.0 or higher
-- **npm**: Package manager
-
-### For Design Agents Collection
-- **Claude Access**: Claude CLI (`claude-code`) or Claude AI web interface
-- **Git**: For cloning the repository (optional)
-
-## Installation
-
-### Design Implementation Tool Setup
-```bash
-# Clone the repository
-git clone https://github.com/imsaif/design-with-claude.git
-cd design-with-claude
-
-# Install dependencies
-npm install
-
-# Test CLI (should show help)
-node bin/design-create.js --help
-
-# Create your first project
-node bin/design-create.js init my-first-project
+```
+"Healthcare dashboard with accessibility"
+  → style: clean
+  → type: dashboard
+  → industry: health
+  → concerns: [accessible, accessibility]
 ```
 
-### Design Agents Collection Setup
+### Stage 2: Select Agents
 
-#### Option 1: Clone and Use Directly
-Clone the repository and reference agents from the location:
-```bash
-git clone https://github.com/imsaif/design-with-claude.git
-cd design-with-claude
+AgentSelector scores all 29 agents against your brief using keyword matching, category boosts, industry mapping, and concern detection. The top 5 are selected with roles:
+
+| Brief | Selected Agents |
+|-------|----------------|
+| "Modern SaaS landing page" | design-system-architect, ui-designer, visual-designer, brand-strategist, marketing-designer |
+| "Healthcare dashboard with accessibility" | accessibility-specialist, ui-designer, design-system-architect, dashboard-designer, healthcare-ux |
+| "Dark mode crypto dashboard with animation" | dashboard-designer, ui-designer, design-system-architect, motion-designer, product-designer |
+
+Different briefs get different experts. The selection is dynamic, not hardcoded.
+
+### Stage 3: Extract Knowledge
+
+AgentKnowledge transforms each selected agent's expertise into structured guidance:
+
+```
+accessibility-specialist  →  contrast: "AAA", ARIA requirements, touch targets >= 44px
+motion-designer           →  animation durations, easing curves, transition specs
+dashboard-designer        →  grid: 12-col, max-width: 1440px, gutterSize: 24px
+design-system-architect   →  button variants, shadow depth, component token hierarchy
 ```
 
-#### Option 2: Install to Claude's Agent Directory
+### Stage 4: Generate
 
-#### User-wide Installation
-Make agents available for all your projects:
-```bash
-# Clone the repository
-git clone https://github.com/imsaif/design-with-claude.git
-cd design-with-claude
+Generators consume the guidance to produce informed output:
+- **Token Generator** — colors, typography, spacing, shadows, border-radius, and motion tokens (when motion-designer is selected)
+- **Component Generator** — buttons with agent-suggested variants, ARIA attributes from accessibility-specialist, transition timing from motion-designer
+- **Layout Generator** — grid systems and breakpoints from layout guidance
 
-# Copy agents to your home Claude directory
-cp -r agents/* ~/.claude/agents/
-```
+### Two Modes
 
-#### Project-specific Installation
-Install agents for a specific project only:
-```bash
-# Navigate to your project
-cd your-project
-
-# Copy agents to project's Claude directory
-cp -r path/to/design-with-claude/agents/* .claude/agents/
-```
-
-### Option 3: Use with Claude Web Interface
-Simply copy the content of any agent file and paste it at the beginning of your Claude conversation to give Claude that agent's expertise.
+- **Local** (default) — agent knowledge drives generators deterministically. No API key needed.
+- **API** (when `ANTHROPIC_API_KEY` is set) — the primary agent's full markdown becomes Claude's system prompt for richer plan generation. Falls back to local on failure.
 
 ## Quick Start
 
-After installation, you can immediately start using agents:
+```bash
+# Clone and install
+git clone https://github.com/imsaif/design-with-claude.git
+cd design-with-claude
+npm install
+
+# Initialize a project
+node bin/design-create.js init my-project
+cd my-project
+
+# Generate from a brief
+design-create from-brief "Modern SaaS landing page with pricing section"
+
+# Or generate specific pieces
+design-create tokens --mode light --primary "#6366F1"
+design-create component button
+design-create layout landing-page
+design-create generate icons --set basic
+```
+
+### Optional: Enable API Mode
+
+```bash
+export ANTHROPIC_API_KEY=your-key-here
+design-create from-brief "Modern SaaS landing page"
+# → Uses Claude to generate a richer design plan
+```
+
+The `@anthropic-ai/sdk` is an optional dependency. The CLI works fully without it.
+
+## Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `init [name]` | Initialize a new design project with full structure |
+| `from-brief <brief>` | Generate complete design from natural language description |
+| `tokens` | Generate design token system (colors, typography, spacing, shadows) |
+| `component <name>` | Generate a production-ready component (button, input, modal, etc.) |
+| `layout <type>` | Generate page layouts (landing-page, dashboard, documentation) |
+| `generate icons` | Generate SVG icon sets with React components |
+| `generate placeholders` | Generate placeholder images and avatars |
+
+### What Gets Generated
+
+```
+my-project/
+├── tokens/
+│   ├── tokens.json          # Full token system as JSON
+│   └── variables.css        # CSS custom properties
+├── src/
+│   └── components/
+│       ├── Button.jsx       # With variants, sizes, loading, ARIA
+│       ├── Button.css       # Agent-informed styles
+│       ├── Card.jsx
+│       ├── Hero.jsx
+│       ├── Input.jsx        # Form components
+│       ├── Modal.jsx        # Interactive components
+│       ├── Header.jsx       # Navigation
+│       └── ...
+└── ...
+```
+
+**Token system includes:** full color scales (50-900) for primary/secondary/neutral/semantic, typography (10 sizes, 9 weights), spacing (18 values), shadows (8 levels), border-radius, and motion tokens when a motion-designer agent is selected.
+
+**Components include:** Button (up to 5 variants x 3 sizes x 5 states), forms (Input, Select, Checkbox, Radio, Textarea), navigation (Header, Sidebar, Breadcrumb), interactive (Modal, Dropdown, Tooltip, Tabs), and basic templates (Card, Hero, FeatureSection).
+
+## The 29 Design Agents
+
+Agents live in `agents/` as markdown files with YAML frontmatter, structured sections, and cross-references. The CLI parses them at runtime — no manual registration needed.
+
+### Core Design
+| Agent | Expertise |
+|-------|-----------|
+| `ui-designer` | Visual hierarchy, layout composition, grid systems, dark mode |
+| `ux-design-expert` | User experience optimization, usability, research methods |
+| `design-system-architect` | Token architecture, component APIs, governance, versioning |
+| `accessibility-specialist` | WCAG compliance, screen readers, keyboard navigation, ARIA |
+
+### Visual Design
+| Agent | Expertise |
+|-------|-----------|
+| `visual-designer` | Typography, color theory, composition, visual storytelling |
+| `motion-designer` | Animation, transitions, micro-interactions, performance |
+| `icon-designer` | Icon systems, consistency, scalability |
+| `illustration-designer` | Custom illustrations, visual narratives |
+
+### Product Design
+| Agent | Expertise |
+|-------|-----------|
+| `product-designer` | End-to-end product design, user needs, business goals |
+| `web-designer` | Responsive web design, layouts, performance |
+| `mobile-designer` | iOS/Android design, touch interactions, platform guidelines |
+| `dashboard-designer` | Data visualization, analytics interfaces, chart selection |
+
+### Brand Identity
+| Agent | Expertise |
+|-------|-----------|
+| `brand-strategist` | Brand positioning, architecture, personality, messaging |
+| `logo-designer` | Logo design, visual identity marks |
+| `brand-guidelines-creator` | Comprehensive brand documentation |
+| `marketing-designer` | Campaign creative, conversion optimization |
+
+### Interaction Design
+| Agent | Expertise |
+|-------|-----------|
+| `interaction-designer` | Micro-interactions, user feedback systems |
+| `prototyping-expert` | Rapid prototyping, fidelity levels |
+| `gesture-designer` | Touch, gesture, spatial interactions |
+| `voice-ui-designer` | Conversational interfaces, voice experiences |
+
+### Research & Strategy
+| Agent | Expertise |
+|-------|-----------|
+| `ux-researcher` | Qualitative and quantitative research methods |
+| `information-architect` | Content organization, navigation, taxonomy |
+| `design-strategist` | Design vision, business alignment |
+| `service-designer` | Service blueprints, customer journeys |
+
+### Specialized
+| Agent | Expertise |
+|-------|-----------|
+| `game-ui-designer` | Game interfaces, HUD systems, menus |
+| `healthcare-ux` | Medical interfaces, HIPAA compliance, clinical workflows |
+| `ar-vr-designer` | Augmented/virtual reality experiences |
+| `automotive-ux` | In-vehicle infotainment, digital clusters |
+| `design-implementation-guide` | Practical implementation guidance |
+
+## Using Agents Standalone
+
+Agents work independently of the CLI too:
 
 ### With Claude CLI
 ```bash
-# Start a new Claude session with a specific agent
 claude --agent ui-designer "Help me design a landing page"
-
-# Or within an existing Claude session
-> @ui-designer Create a responsive navigation menu
 ```
 
 ### With Claude Web Interface
-1. Open any agent file (e.g., `agents/core-design/ui-designer.md`)
-2. Copy the entire content
-3. Paste it at the start of your Claude conversation
-4. Ask your design question
+Copy the content of any agent file and paste it at the start of your conversation.
 
-### Verify Installation (Claude CLI)
+### Combining Agents
 ```bash
-# List available agents
-ls ~/.claude/agents/
-
-# Or for project-specific
-ls .claude/agents/
-```
-
-## Agent Categories
-
-### 🎨 Core Design
-Essential design agents for foundational design work.
-
-- **design-system-architect** - Create comprehensive design systems with tokens, components, and governance
-- **ux-design-expert** - Optimize user experience, accessibility, and interface design
-- **ui-designer** - Design beautiful, functional user interfaces with visual hierarchy
-- **accessibility-specialist** - Ensure WCAG compliance and inclusive design practices
-
-### 🖼️ Visual Design
-Agents focused on visual communication and aesthetics.
-
-- **visual-designer** - Master typography, color theory, and composition
-- **illustration-designer** - Create custom illustrations and visual narratives
-- **icon-designer** - Design comprehensive icon systems and pictographs
-- **motion-designer** - Develop animations, transitions, and micro-interactions
-
-### 📱 Product Design
-End-to-end product design across platforms.
-
-- **product-designer** - Holistic product design from research to launch
-- **mobile-designer** - iOS and Android app design with platform guidelines
-- **web-designer** - Responsive web design with performance optimization
-- **dashboard-designer** - Data visualization and analytics interfaces
-
-### 🏢 Brand Identity
-Brand development and marketing design.
-
-- **brand-strategist** - Brand positioning, architecture, and strategy
-- **logo-designer** - Logo design and visual identity systems
-- **brand-guidelines-creator** - Comprehensive brand documentation
-- **marketing-designer** - Campaign creative and conversion optimization
-
-### ⚡ Interaction Design
-Interactive experiences and prototyping.
-
-- **interaction-designer** - Micro-interactions and user feedback systems
-- **prototyping-expert** - Rapid prototyping from low to high fidelity
-- **gesture-designer** - Touch, gesture, and spatial interactions
-- **voice-ui-designer** - Conversational interfaces and voice experiences
-
-### 🔬 Research & Strategy
-User research and strategic design planning.
-
-- **ux-researcher** - Qualitative and quantitative research methods
-- **information-architect** - Content organization and navigation systems
-- **service-designer** - End-to-end service blueprints and journeys
-- **design-strategist** - Design vision and business alignment
-
-### 🎮 Specialized
-Domain-specific design expertise.
-
-- **game-ui-designer** - Game interfaces, HUD systems, and menus
-- **ar-vr-designer** - Augmented and virtual reality experiences
-- **automotive-ux** - In-vehicle infotainment and digital clusters
-- **healthcare-ux** - Medical interfaces with compliance and safety
-
-## Usage Examples
-
-### Using Agents with Claude CLI
-
-Invoke agents using the @ symbol followed by the agent name:
-
-```bash
-# UI/UX Design
-@ui-designer Help me design a landing page for a SaaS product
-
-# User Research
-@ux-researcher Plan a user research study for our mobile app
-
-# Brand Strategy
-@brand-strategist Develop a brand positioning for a sustainable fashion startup
-
-# Accessibility Review
-@accessibility-specialist Review my design for WCAG compliance
-```
-
-### Using Agents with Claude Web Interface
-
-When using the web interface, paste the agent content at the start of your conversation, then ask your questions normally:
-
-```
-[Paste agent content from agents/core-design/ui-designer.md]
-
-User: Help me design a landing page for a SaaS product
-Claude: [Responds with UI designer expertise]
-```
-
-### Combining Multiple Agents
-
-Agents can work together for comprehensive solutions:
-
-```bash
-# For holistic design solutions
 @design-strategist and @product-designer Help me plan a new feature rollout
-
-# For visual and motion design
 @visual-designer and @motion-designer Create an animated hero section
-
-# For research and architecture
-@ux-researcher and @information-architect Optimize our navigation structure
 ```
 
-### Real-World Scenarios
+## Architecture
+
+```
+design-with-claude/
+├── agents/                        # 29 agent markdown files
+│   ├── core-design/              # ui-designer, ux-expert, design-system, accessibility
+│   ├── visual-design/            # visual, motion, icon, illustration
+│   ├── product-design/           # product, web, mobile, dashboard
+│   ├── brand-identity/           # brand-strategist, logo, guidelines, marketing
+│   ├── interaction-design/       # interaction, prototyping, gesture, voice
+│   ├── research-strategy/        # researcher, IA, strategist, service
+│   └── specialized/              # game, healthcare, AR/VR, automotive, implementation
+│
+├── src/
+│   ├── agents/                   # Agent pipeline (new)
+│   │   ├── agent-loader.js       # Parse markdown → structured data
+│   │   ├── agent-selector.js     # Score & select relevant agents
+│   │   └── agent-knowledge.js    # Extract guidance for generators
+│   │
+│   ├── ai-orchestrator/          # Orchestration
+│   │   ├── orchestrator.js       # Pipeline coordinator + optional API mode
+│   │   └── brief-parser.js       # NLP brief → structured data
+│   │
+│   ├── generators/               # Code generation
+│   │   ├── token-generator.js    # Design tokens (CSS + JSON)
+│   │   ├── component-generator.js # Component routing
+│   │   └── components/           # Button, Form, Navigation, Interactive
+│   │
+│   └── cli/                      # CLI commands
+│       ├── from-brief.js         # Brief → full generation
+│       ├── init.js               # Project scaffolding
+│       └── ...
+│
+├── __tests__/                    # Jest tests (49 tests, 7 suites)
+└── bin/design-create.js          # CLI entry point
+```
+
+## Why This Exists
+
+Tools like Figma AI and V0 generate visuals. This tool generates **engineering artifacts** — tokens, components, and systems that a senior engineer would approve.
+
+| | Visual Tools (Figma/V0) | Design with Claude |
+|---|---|---|
+| **Output** | Screenshots or spaghetti code | Production-ready architecture |
+| **Structure** | Single file, copy-paste | Full project scaffolding |
+| **Logic** | Hardcoded values | Props, variants, semantic tokens |
+| **Context** | "Here is the result" | "Here is why" (agent reasoning) |
+| **Workflow** | Switch to design tool | Stay in your terminal |
+
+## Development
 
 ```bash
-# Design System Creation
-@design-system-architect Create a token system for our startup
-
-# Mobile App Design
-@mobile-designer Design an iOS app following Apple's HIG
-
-# Dashboard Creation  
-@dashboard-designer Create a analytics dashboard with key metrics
-
-# Brand Identity
-@logo-designer Create logo concepts for a tech startup
+npm test              # Run all 49 tests
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+npm run lint          # ESLint
+npm run format        # Prettier
 ```
-
-## Agent Structure
-
-Each agent follows a consistent structure:
-
-```markdown
----
-name: agent-name
-description: Brief description of expertise
-category: category-name
-version: 1.0.0
-tools: all
----
-
-Role description and expertise details...
-
-## Core Expertise
-- Specific skills and knowledge areas
-
-## When Invoked
-1. Step-by-step approach to tasks
-
-## Best Practices
-- Key principles and guidelines
-```
-
-## Features
-
-### Comprehensive Coverage
-- 28 specialized agents covering all design disciplines
-- From strategy to execution
-- Platform-specific expertise
-- Industry-specific knowledge
-
-### Best Practices
-- Industry standards and guidelines
-- Accessibility and compliance
-- Performance optimization
-- User-centered methodologies
-
-### Practical Application
-- Step-by-step workflows
-- Tool recommendations
-- Documentation templates
-- Testing methodologies
 
 ## Contributing
 
-We welcome contributions! To add new agents or improve existing ones:
-
 1. Fork the repository
-2. Create your agent following the standard structure
-3. Place it in the appropriate category folder
-4. Update this README with your agent details
-5. Submit a pull request
-
-### Agent Guidelines
-- Clear, specific expertise definition
-- Practical, actionable guidance
-- Industry best practices
-- Comprehensive documentation
-
-## Version History
-
-- **v1.0.0** - Initial release with 28 design agents
+2. Create your agent in the appropriate category folder following the standard structure
+3. The CLI picks it up automatically — no registration needed
+4. Submit a pull request
 
 ## License
 
-This project is licensed under the ISC License.
-
-## Support
-
-For questions, issues, or suggestions, please open an issue in the repository.
-
-## Acknowledgments
-
-This collection was inspired by the need for specialized design assistance in AI-powered workflows, helping designers leverage Claude's capabilities for enhanced creativity and productivity.
-
----
-
-**Note**: These agents are designed to work with Claude and provide specialized design expertise. They follow industry best practices and are continuously updated to reflect current design standards and methodologies.
+ISC

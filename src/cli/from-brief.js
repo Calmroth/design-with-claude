@@ -17,13 +17,16 @@ async function generateFromBrief(brief, options = {}) {
     console.log(chalk.yellow('\n📋 Generation Plan:'));
     console.log(chalk.gray(JSON.stringify(result.plan, null, 2)));
 
-    // 2. Generate Tokens
+    // 2. Generate Tokens (with agent guidance)
     const tokenGenerator = new TokenGenerator(projectPath);
-    const tokens = await tokenGenerator.generate(result.plan.theme);
+    const tokens = await tokenGenerator.generate(result.plan.theme, result.guidance);
 
-    // 3. Generate Components (with tokens)
+    // 3. Generate Components (with tokens + agent guidance)
     const componentGenerator = new ComponentGenerator(projectPath);
-    await componentGenerator.generate(result.plan.components, tokens, options);
+    await componentGenerator.generate(result.plan.components, tokens, {
+      ...options,
+      guidance: result.guidance
+    });
 
     console.log(chalk.green('\n✨ Generation complete!'));
     console.log(chalk.gray('Files generated:'));

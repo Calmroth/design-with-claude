@@ -21,10 +21,11 @@ class ComponentGenerator {
   async generate(components, tokens = {}, options = {}) {
     console.log(chalk.blue('🧩 Generating components...'));
 
+    const guidance = options.guidance || {};
     const generatedComponents = [];
 
     for (const componentName of components) {
-      const component = await this.generateComponent(componentName, tokens, options);
+      const component = await this.generateComponent(componentName, tokens, { ...options, guidance });
       if (component) {
         generatedComponents.push(component);
       }
