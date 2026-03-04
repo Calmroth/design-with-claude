@@ -1,129 +1,81 @@
-const AgentKnowledge = require('../src/agents/agent-knowledge');
-const { mergeGuidance } = require('../src/agents/agent-knowledge');
+const path = require('path');
+const { loadAgents } = require('../src/agents/agent-loader');
+const { selectAgents } = require('../src/agents/agent-selector');
+const { extractGuidance } = require('../src/agents/agent-knowledge');
 
-describe('AgentKnowledge', () => {
-  const knowledge = new AgentKnowledge();
+const AGENTS_DIR = path.join(__dirname, '..', 'agents');
 
-  function makeAgent(name, overrides = {}) {
-    return {
-      agent: {
-        name,
-        intro: overrides.intro || `You are a ${name} agent.`,
-        coreExpertise: overrides.coreExpertise || ['expertise 1', 'expertise 2'],
-        bestPractices: overrides.bestPractices || ['practice 1', 'practice 2'],
-        rawMarkdown: overrides.rawMarkdown || `# ${name}\nContent here.`,
-        ...overrides
-      },
-      score: overrides.score || 10,
-      role: overrides.role || 'primary'
+describe('agent-knowledge', () => {
+  let agents;
+
+  beforeAll(() => {
+    agents = loadAgents(AGENTS_DIR);
+  });
+
+  test('extracts guidance from selected agents', () => {
+    const context = {
+      description: 'Modern SaaS dashboard',
+      concerns: ['accessibility'],
     };
-  }
 
-  test('should extract guidance from ui-designer agent', () => {
-    const selected = [makeAgent('ui-designer', {
-      intro: 'You are a UI Designer specializing in visual design.',
-      coreExpertise: ['Visual hierarchy', 'Grid systems', 'Dark mode and theming']
-    })];
+    const selected = selectAgents(context, agents);
+    const guidance = extractGuidance(selected, context);
 
-    const guidance = knowledge.extract(selected);
-    expect(guidance.colorGuidance).toBeDefined();
-    expect(guidance.layoutGuidance.gridColumns).toBe(12);
-    expect(guidance.typographyGuidance.style).toBe('modern');
+    expect(guidance.recommendations.length).toBeGreaterThan(0);
+    expect(guidance.checklist.length).toBeGreaterThan(0);
   });
 
-  test('should extract guidance from accessibility-specialist', () => {
-    const selected = [makeAgent('accessibility-specialist')];
+  test('includes agent attribution in recommendations', () => {
+    const context = {
+      description: 'Healthcare patient portal',
+      industry: 'healthcare',
+      concerns: [],
+    };
 
-    const guidance = knowledge.extract(selected);
-    expect(guidance.colorGuidance.contrast).toBe('AAA');
-    expect(guidance.componentGuidance.accessibilityRequirements.length).toBeGreaterThan(0);
+    const selected = selectAgents(context, agents);
+    const guidance = extractGuidance(selected, context);
+
+    // At least some recommendations should have source attribution
+    const withSource = guidance.recommendations.filter(r => r.source);
+    expect(withSource.length).toBeGreaterThan(0);
   });
 
-  test('should extract motion tokens from motion-designer', () => {
-    const selected = [makeAgent('motion-designer')];
+  test('extracts anti-patterns', () => {
+    const context = {
+      description: 'E-commerce product page',
+      concerns: [],
+    };
 
-    const guidance = knowledge.extract(selected);
-    expect(guidance.componentGuidance.animationDurations).toBeDefined();
-    expect(guidance.componentGuidance.animationDurations.micro).toBe('150ms');
-    expect(guidance.componentGuidance.transitions).toBeDefined();
+    const selected = selectAgents(context, agents);
+    const guidance = extractGuidance(selected, context);
+
+    expect(guidance.antiPatterns.length).toBeGreaterThan(0);
   });
 
-  test('should merge guidance from multiple agents', () => {
-    const selected = [
-      makeAgent('ui-designer', {
-        intro: 'You are a UI Designer.',
-        coreExpertise: ['Visual hierarchy']
-      }),
-      makeAgent('accessibility-specialist', { role: 'supporting' }),
-      makeAgent('motion-designer', { role: 'specialist' })
-    ];
+  test('extracts principles', () => {
+    const context = {
+      description: 'Mobile app navigation',
+      concerns: ['responsive'],
+    };
 
-    const guidance = knowledge.extract(selected);
-    // Should have UI designer's layout guidance
-    expect(guidance.layoutGuidance.gridColumns).toBe(12);
-    // Should have accessibility requirements
-    expect(guidance.componentGuidance.accessibilityRequirements.length).toBeGreaterThan(0);
-    // Should have motion durations
-    expect(guidance.componentGuidance.animationDurations).toBeDefined();
+    const selected = selectAgents(context, agents);
+    const guidance = extractGuidance(selected, context);
+
+    expect(guidance.principles.length).toBeGreaterThan(0);
   });
 
-  test('should collect best practices from all selected agents', () => {
-    const selected = [
-      makeAgent('ui-designer', {
-        bestPractices: ['Practice A', 'Practice B', 'Practice C']
-      }),
-      makeAgent('brand-strategist', {
-        role: 'supporting',
-        bestPractices: ['Practice D', 'Practice E']
-      })
-    ];
+  test('deduplicates similar recommendations', () => {
+    const context = {
+      description: 'Accessible form with validation',
+      concerns: ['accessibility'],
+    };
 
-    const guidance = knowledge.extract(selected);
-    expect(guidance.bestPractices.length).toBeGreaterThanOrEqual(4);
-  });
+    const selected = selectAgents(context, agents);
+    const guidance = extractGuidance(selected, context);
 
-  test('should add agent notes for each selected agent', () => {
-    const selected = [
-      makeAgent('ui-designer', { role: 'primary' }),
-      makeAgent('brand-strategist', { role: 'supporting' })
-    ];
-
-    const guidance = knowledge.extract(selected);
-    expect(guidance.agentNotes.length).toBe(2);
-    expect(guidance.agentNotes[0].agent).toBe('ui-designer');
-    expect(guidance.agentNotes[0].role).toBe('primary');
-    expect(guidance.agentNotes[1].agent).toBe('brand-strategist');
-  });
-
-  test('should handle agents not in extraction map gracefully', () => {
-    const selected = [makeAgent('unknown-agent')];
-
-    const guidance = knowledge.extract(selected);
-    expect(guidance.agentNotes.length).toBe(1);
-    expect(guidance.agentNotes[0].agent).toBe('unknown-agent');
-  });
-});
-
-describe('mergeGuidance', () => {
-  test('should deep-merge objects', () => {
-    const base = { colorGuidance: { mood: 'calm' } };
-    const patch = { colorGuidance: { contrast: 'high' } };
-    const result = mergeGuidance(base, patch);
-    expect(result.colorGuidance.mood).toBe('calm');
-    expect(result.colorGuidance.contrast).toBe('high');
-  });
-
-  test('should concatenate and de-dup arrays', () => {
-    const base = { items: ['a', 'b'] };
-    const patch = { items: ['b', 'c'] };
-    const result = mergeGuidance(base, patch);
-    expect(result.items).toEqual(['a', 'b', 'c']);
-  });
-
-  test('should overwrite scalar values', () => {
-    const base = { mode: 'light' };
-    const patch = { mode: 'dark' };
-    const result = mergeGuidance(base, patch);
-    expect(result.mode).toBe('dark');
+    // Check no exact duplicates
+    const texts = guidance.recommendations.map(r => r.text);
+    const unique = [...new Set(texts)];
+    expect(texts.length).toBe(unique.length);
   });
 });

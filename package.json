@@ -1,18 +1,14 @@
 {
-  "name": "design-create",
+  "name": "design-agents-mcp",
   "version": "1.0.0",
-  "description": "AI-powered design implementation tool that generates actual code, components, and Figma files from design briefs",
+  "description": "Design expertise MCP server — 29 specialized design agents for your AI coding tool",
   "main": "src/index.js",
   "bin": {
-    "design-create": "./bin/design-create.js"
-  },
-  "directories": {
-    "doc": "docs",
-    "example": "examples"
+    "design-agents-mcp": "./bin/design-agents-mcp.js"
   },
   "scripts": {
-    "start": "node bin/design-create.js",
-    "dev": "nodemon bin/design-create.js",
+    "start": "node bin/design-agents-mcp.js",
+    "mcp": "node bin/design-agents-mcp.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -21,37 +17,28 @@
   },
   "keywords": [
     "design",
+    "mcp",
     "ai",
-    "code-generation",
-    "figma",
-    "cli",
-    "components",
     "design-system",
-    "react",
-    "vue",
-    "html"
+    "accessibility",
+    "wcag",
+    "design-review",
+    "design-tokens"
   ],
-  "author": "Design Implementation Tool",
+  "author": "",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"
   },
   "dependencies": {
-    "commander": "^9.4.1",
-    "handlebars": "^4.7.8",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "fs-extra": "^11.1.1",
     "chalk": "^4.1.2",
-    "inquirer": "^9.2.8",
-    "joi": "^17.9.2",
-    "axios": "^1.5.0",
-    "glob": "^10.3.3"
-  },
-  "optionalDependencies": {
-    "@anthropic-ai/sdk": "^0.39.0"
+    "glob": "^10.3.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "nodemon": "^3.0.1",
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
     "@types/jest": "^29.5.5"

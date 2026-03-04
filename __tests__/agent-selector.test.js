@@ -1,120 +1,98 @@
 const path = require('path');
-const AgentSelector = require('../src/agents/agent-selector');
-const AgentLoader = require('../src/agents/agent-loader');
+const { loadAgents } = require('../src/agents/agent-loader');
+const { selectAgents } = require('../src/agents/agent-selector');
 
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
 
-describe('AgentSelector', () => {
-  const loader = new AgentLoader(AGENTS_DIR);
-  const selector = new AgentSelector({ loader, maxAgents: 5, minScore: 3 });
+describe('agent-selector', () => {
+  let agents;
 
-  test('should select agents for a SaaS landing page brief', async () => {
-    const parsedBrief = {
-      originalBrief: 'Modern SaaS landing page',
-      style: 'modern',
-      type: 'landing',
-      industry: 'saas',
-      features: ['hero'],
-      complexity: 'low',
-      concerns: [],
-      briefWords: ['modern', 'saas', 'landing', 'page']
-    };
-
-    const selected = await selector.select(parsedBrief);
-    expect(selected.length).toBeGreaterThan(0);
-    expect(selected.length).toBeLessThanOrEqual(5);
-
-    const names = selected.map(s => s.agent.name);
-    // Always-include agents should be present
-    expect(names).toContain('ui-designer');
-    expect(names).toContain('design-system-architect');
+  beforeAll(() => {
+    agents = loadAgents(AGENTS_DIR);
   });
 
-  test('should include healthcare-ux for health industry', async () => {
-    const parsedBrief = {
-      originalBrief: 'Healthcare dashboard with accessibility',
-      style: 'clean',
-      type: 'dashboard',
-      industry: 'health',
-      features: [],
-      complexity: 'medium',
+  test('selects agents for a SaaS landing page', () => {
+    const context = {
+      description: 'Modern SaaS landing page',
+      industry: 'saas',
+      concerns: [],
+      componentType: 'landing',
+    };
+
+    const result = selectAgents(context, agents);
+    expect(result.primary).toBeDefined();
+    expect(result.supporting.length).toBeGreaterThan(0);
+  });
+
+  test('includes accessibility-specialist as supporting by default', () => {
+    const context = {
+      description: 'Simple product card component',
+      concerns: [],
+    };
+
+    const result = selectAgents(context, agents);
+    const allNames = [
+      result.primary.name,
+      ...result.supporting.map(a => a.name),
+    ];
+    expect(allNames).toContain('accessibility-specialist');
+  });
+
+  test('selects healthcare-ux-specialist for healthcare context', () => {
+    const context = {
+      description: 'Healthcare patient dashboard',
+      industry: 'healthcare',
       concerns: ['accessibility'],
-      briefWords: ['healthcare', 'dashboard', 'accessibility']
     };
 
-    const selected = await selector.select(parsedBrief);
-    const names = selected.map(s => s.agent.name);
-    expect(names).toContain('healthcare-ux');
+    const result = selectAgents(context, agents);
+    const allNames = [
+      result.primary.name,
+      ...result.supporting.map(a => a.name),
+    ];
+    expect(allNames).toContain('healthcare-ux-specialist');
   });
 
-  test('should include accessibility-specialist when accessibility is mentioned', async () => {
-    const parsedBrief = {
-      originalBrief: 'Accessible web application with screen reader support',
-      style: 'modern',
-      type: 'webapp',
-      industry: 'general',
-      features: [],
-      complexity: 'medium',
-      concerns: ['accessible', 'screen reader'],
-      briefWords: ['accessible', 'web', 'application', 'screen', 'reader', 'support']
+  test('returns scores sorted in descending order', () => {
+    const context = {
+      description: 'Complex enterprise analytics dashboard with charts',
+      concerns: ['accessibility', 'responsive'],
     };
 
-    const selected = await selector.select(parsedBrief);
-    const names = selected.map(s => s.agent.name);
-    expect(names).toContain('accessibility-specialist');
+    const result = selectAgents(context, agents);
+    for (let i = 1; i < result.scores.length; i++) {
+      expect(result.scores[i - 1].score).toBeGreaterThanOrEqual(
+        result.scores[i].score
+      );
+    }
   });
 
-  test('should assign roles correctly', async () => {
-    const parsedBrief = {
-      originalBrief: 'Modern dashboard',
-      style: 'modern',
-      type: 'dashboard',
-      industry: 'general',
-      features: [],
-      complexity: 'low',
+  test('selects form-design-specialist for forms', () => {
+    const context = {
+      description: 'User registration form with validation',
       concerns: [],
-      briefWords: ['modern', 'dashboard']
+      componentType: 'form',
     };
 
-    const selected = await selector.select(parsedBrief);
-    expect(selected[0].role).toBe('primary');
-    if (selected.length > 1) {
-      expect(['supporting', 'specialist']).toContain(selected[1].role);
-    }
+    const result = selectAgents(context, agents);
+    const allNames = [
+      result.primary.name,
+      ...result.supporting.map(a => a.name),
+    ];
+    expect(allNames).toContain('form-design-specialist');
   });
 
-  test('should score agents and return them sorted by score', async () => {
-    const parsedBrief = {
-      originalBrief: 'Dark mode crypto dashboard with animation',
-      style: 'dark',
-      type: 'dashboard',
-      industry: 'crypto',
-      features: [],
-      complexity: 'medium',
-      concerns: ['animation'],
-      briefWords: ['dark', 'mode', 'crypto', 'dashboard', 'animation']
+  test('selects dashboard-designer for dashboard context', () => {
+    const context = {
+      description: 'Analytics dashboard with KPI cards and charts',
+      concerns: [],
     };
 
-    const selected = await selector.select(parsedBrief);
-    for (let i = 1; i < selected.length; i++) {
-      expect(selected[i - 1].score).toBeGreaterThanOrEqual(selected[i].score);
-    }
-  });
-
-  test('should not exceed maxAgents', async () => {
-    const smallSelector = new AgentSelector({ loader, maxAgents: 3, minScore: 1 });
-    const parsedBrief = {
-      originalBrief: 'Complex enterprise platform with everything',
-      style: 'corporate',
-      type: 'platform',
-      industry: 'saas',
-      features: ['hero', 'pricing', 'testimonials', 'contact', 'footer', 'nav'],
-      complexity: 'high',
-      concerns: ['accessible', 'responsive', 'animation', 'brand', 'dark mode'],
-      briefWords: ['complex', 'enterprise', 'platform', 'everything']
-    };
-
-    const selected = await smallSelector.select(parsedBrief);
-    expect(selected.length).toBeLessThanOrEqual(3);
+    const result = selectAgents(context, agents);
+    const allNames = [
+      result.primary.name,
+      ...result.supporting.map(a => a.name),
+    ];
+    expect(allNames).toContain('dashboard-designer');
   });
 });

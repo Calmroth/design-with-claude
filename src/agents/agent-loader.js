@@ -1,202 +1,358 @@
-const fs = require('fs-extra');
+/**
+ * Agent Loader - Loads and parses agent markdown files from the agents/ directory.
+ *
+ * Parses structured markdown files into agent objects with:
+ * role, expertise, design principles, guidelines, checklist, anti-patterns, and keywords.
+ *
+ * @module agent-loader
+ */
+
+const fs = require('fs');
 const path = require('path');
 
-const AGENTS_DIR = path.join(__dirname, '..', '..', 'agents');
+// ---------------------------------------------------------------------------
+// Markdown Section Parser Utilities
+// ---------------------------------------------------------------------------
 
 /**
- * Parse YAML frontmatter from markdown content.
- * Simple regex-based parser — no external dependency needed.
+ * Split markdown content into sections by ## headings.
+ * @param {string} content - Raw markdown content
+ * @returns {{ heading: string, body: string }[]}
  */
-function parseFrontmatter(content) {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!match) return { meta: {}, body: content };
+function splitSections(content) {
+  const sections = [];
+  const lines = content.split('\n');
+  let currentHeading = '';
+  let currentBody = [];
 
-  const meta = {};
-  const lines = match[1].split('\n');
   for (const line of lines) {
-    const colonIdx = line.indexOf(':');
-    if (colonIdx === -1) continue;
-    const key = line.slice(0, colonIdx).trim();
-    const value = line.slice(colonIdx + 1).trim();
-    meta[key] = value;
+    const h2Match = line.match(/^##\s+(.+)$/);
+    if (h2Match) {
+      // Save previous section
+      if (currentHeading || currentBody.length > 0) {
+        sections.push({
+          heading: currentHeading.trim(),
+          body: currentBody.join('\n').trim(),
+        });
+      }
+      currentHeading = h2Match[1];
+      currentBody = [];
+    } else {
+      currentBody.push(line);
+    }
   }
 
-  const body = content.slice(match[0].length).trim();
-  return { meta, body };
-}
-
-/**
- * Extract bullet-list items from a markdown section body.
- * Handles lines starting with "- " or "* ".
- */
-function extractListItems(sectionBody) {
-  return sectionBody
-    .split('\n')
-    .filter(line => /^\s*[-*]\s/.test(line))
-    .map(line => line.replace(/^\s*[-*]\s+/, '').trim())
-    .filter(Boolean);
-}
-
-/**
- * Extract numbered-list items from a markdown section body.
- */
-function extractNumberedItems(sectionBody) {
-  return sectionBody
-    .split('\n')
-    .filter(line => /^\s*\d+\.\s/.test(line))
-    .map(line => line.replace(/^\s*\d+\.\s+/, '').replace(/\*\*/g, '').trim())
-    .filter(Boolean);
-}
-
-/**
- * Parse a markdown body into sections keyed by ## heading.
- * Returns Map of heading → content (string between this heading and the next).
- */
-function parseSections(body) {
-  const sections = {};
-  const regex = /^## (.+)$/gm;
-  const headings = [];
-  let match;
-
-  while ((match = regex.exec(body)) !== null) {
-    headings.push({ title: match[1].trim(), index: match.index + match[0].length });
-  }
-
-  for (let i = 0; i < headings.length; i++) {
-    const start = headings[i].index;
-    const end = i + 1 < headings.length
-      ? body.lastIndexOf('\n## ', headings[i + 1].index)
-      : body.length;
-    const content = body.slice(start, end).trim();
-    sections[headings[i].title] = content;
+  // Save final section
+  if (currentHeading || currentBody.length > 0) {
+    sections.push({
+      heading: currentHeading.trim(),
+      body: currentBody.join('\n').trim(),
+    });
   }
 
   return sections;
 }
 
 /**
- * Find @agent-name cross-references in markdown body.
+ * Parse bullet points from a markdown body (lines starting with - or *).
+ * @param {string} body - Section body text
+ * @returns {string[]}
  */
-function extractCrossReferences(body) {
-  const refs = new Set();
-  const regex = /@([a-z][a-z0-9-]*)/g;
-  let match;
-  while ((match = regex.exec(body)) !== null) {
-    refs.add(match[1]);
-  }
-  return Array.from(refs);
-}
+function parseBulletPoints(body) {
+  const items = [];
+  const lines = body.split('\n');
+  let currentItem = '';
 
-/**
- * Extract the intro paragraph — text before the first ## heading.
- */
-function extractIntro(body) {
-  const firstHeading = body.indexOf('\n## ');
-  const text = firstHeading === -1 ? body : body.slice(0, firstHeading);
-  return text.trim();
-}
-
-/**
- * Parse a single agent markdown file into structured data.
- */
-function parseAgentFile(content, filePath) {
-  const { meta, body } = parseFrontmatter(content);
-  const sections = parseSections(body);
-
-  const coreExpertise = sections['Core Expertise']
-    ? extractListItems(sections['Core Expertise'])
-    : [];
-
-  const whenInvoked = sections['When Invoked']
-    ? extractNumberedItems(sections['When Invoked'])
-    : [];
-
-  const bestPractices = sections['Best Practices']
-    ? extractListItems(sections['Best Practices'])
-    : [];
-
-  return {
-    name: meta.name || path.basename(filePath, '.md'),
-    description: meta.description || '',
-    category: meta.category || 'uncategorized',
-    version: meta.version || '1.0.0',
-    intro: extractIntro(body),
-    coreExpertise,
-    whenInvoked,
-    bestPractices,
-    sections,
-    crossReferences: extractCrossReferences(body),
-    rawMarkdown: body,
-    filePath
-  };
-}
-
-class AgentLoader {
-  constructor(agentsDir) {
-    this.agentsDir = agentsDir || AGENTS_DIR;
-    this._cache = null;
-  }
-
-  /**
-   * Load and parse all agent markdown files.
-   * Results are cached after first call.
-   * @returns {ParsedAgent[]}
-   */
-  async loadAll() {
-    if (this._cache) return this._cache;
-
-    const agents = [];
-    const categories = await fs.readdir(this.agentsDir);
-
-    for (const category of categories) {
-      const categoryPath = path.join(this.agentsDir, category);
-      const stat = await fs.stat(categoryPath);
-      if (!stat.isDirectory()) continue;
-
-      const files = await fs.readdir(categoryPath);
-      for (const file of files) {
-        if (!file.endsWith('.md')) continue;
-        const filePath = path.join(categoryPath, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-        agents.push(parseAgentFile(content, filePath));
-      }
+  for (const line of lines) {
+    const bulletMatch = line.match(/^\s*[-*]\s+(.+)$/);
+    if (bulletMatch) {
+      if (currentItem) items.push(currentItem.trim());
+      currentItem = bulletMatch[1];
+    } else if (currentItem && line.match(/^\s{2,}/)) {
+      // Continuation of previous bullet point (indented line)
+      currentItem += ' ' + line.trim();
+    } else {
+      if (currentItem) items.push(currentItem.trim());
+      currentItem = '';
     }
-
-    this._cache = agents;
-    return agents;
   }
 
-  /**
-   * Load a single agent by name.
-   * @param {string} name - Agent name (e.g. 'ui-designer')
-   * @returns {ParsedAgent|null}
-   */
-  async loadByName(name) {
-    const all = await this.loadAll();
-    return all.find(a => a.name === name) || null;
-  }
-
-  /**
-   * Load all agents in a given category.
-   * @param {string} category - Category folder name (e.g. 'core-design')
-   * @returns {ParsedAgent[]}
-   */
-  async loadByCategory(category) {
-    const all = await this.loadAll();
-    return all.filter(a => a.category === category);
-  }
-
-  /**
-   * Clear the cache so agents are re-read from disk on next load.
-   */
-  clearCache() {
-    this._cache = null;
-  }
+  if (currentItem) items.push(currentItem.trim());
+  return items;
 }
 
-module.exports = AgentLoader;
-// Also export helpers for testing
-module.exports.parseAgentFile = parseAgentFile;
-module.exports.parseFrontmatter = parseFrontmatter;
-module.exports.parseSections = parseSections;
-module.exports.extractCrossReferences = extractCrossReferences;
+/**
+ * Parse a numbered list into structured items with optional title/description.
+ * Handles formats like: "1. **Title** - Description" or "1. Title: Description"
+ * @param {string} body - Section body text
+ * @returns {{ number: number, title: string, description: string }[]}
+ */
+function parseNumberedList(body) {
+  const items = [];
+  const lines = body.split('\n');
+  let currentItem = null;
+
+  for (const line of lines) {
+    const numberedMatch = line.match(/^\s*(\d+)[.)]\s+(.+)$/);
+    if (numberedMatch) {
+      if (currentItem) items.push(currentItem);
+
+      const num = parseInt(numberedMatch[1], 10);
+      const text = numberedMatch[2];
+
+      // Try to split title from description
+      // Pattern: **Title** - Description
+      const boldTitleMatch = text.match(/^\*\*(.+?)\*\*\s*[-:]\s*(.+)$/);
+      if (boldTitleMatch) {
+        currentItem = {
+          number: num,
+          title: boldTitleMatch[1].trim(),
+          description: boldTitleMatch[2].trim(),
+        };
+      } else {
+        // Pattern: Title: Description or Title - Description
+        const simpleTitleMatch = text.match(/^([^:-]+)\s*[-:]\s+(.+)$/);
+        if (simpleTitleMatch) {
+          currentItem = {
+            number: num,
+            title: simpleTitleMatch[1].trim(),
+            description: simpleTitleMatch[2].trim(),
+          };
+        } else {
+          currentItem = {
+            number: num,
+            title: text.trim(),
+            description: '',
+          };
+        }
+      }
+    } else if (currentItem && line.match(/^\s{2,}/) && line.trim()) {
+      // Continuation of description
+      currentItem.description += ' ' + line.trim();
+    } else {
+      if (currentItem) items.push(currentItem);
+      currentItem = null;
+    }
+  }
+
+  if (currentItem) items.push(currentItem);
+  return items;
+}
+
+/**
+ * Parse ### subsections within a section body.
+ * @param {string} body - Section body text
+ * @returns {Record<string, string>}
+ */
+function parseSubsections(body) {
+  const subsections = {};
+  const parts = body.split(/(?=^###\s)/m);
+
+  for (const part of parts) {
+    const h3Match = part.match(/^###\s+(.+)$/m);
+    if (h3Match) {
+      const key = h3Match[1].trim();
+      const content = part.replace(/^###\s+.+$/m, '').trim();
+      subsections[key] = content;
+    } else if (part.trim()) {
+      // Content before any ### heading — store as "_intro"
+      subsections['_intro'] = part.trim();
+    }
+  }
+
+  return subsections;
+}
+
+/**
+ * Parse checklist items (- [ ] or - [x] format).
+ * @param {string} body - Section body text
+ * @returns {{ text: string, checked: boolean }[]}
+ */
+function parseChecklist(body) {
+  const items = [];
+  const lines = body.split('\n');
+  let currentItem = null;
+
+  for (const line of lines) {
+    const checkMatch = line.match(/^\s*-\s+\[([ xX])\]\s+(.+)$/);
+    if (checkMatch) {
+      if (currentItem) items.push(currentItem);
+      currentItem = {
+        text: checkMatch[2].trim(),
+        checked: checkMatch[1].toLowerCase() === 'x',
+      };
+    } else if (currentItem && line.match(/^\s{2,}/) && line.trim()) {
+      // Continuation of checklist item
+      currentItem.text += ' ' + line.trim();
+    } else {
+      if (currentItem) items.push(currentItem);
+      currentItem = null;
+    }
+  }
+
+  if (currentItem) items.push(currentItem);
+  return items;
+}
+
+/**
+ * Parse comma-separated keywords, trimmed and lowercased.
+ * @param {string} body - Section body text
+ * @returns {string[]}
+ */
+function parseKeywords(body) {
+  // Handle both comma-separated inline and bullet-point formats
+  const trimmed = body.trim();
+
+  // If it looks like bullet points, parse those
+  if (/^\s*[-*]\s/m.test(trimmed)) {
+    return parseBulletPoints(trimmed).map(k => k.toLowerCase().trim()).filter(Boolean);
+  }
+
+  // Otherwise treat as comma-separated (may span multiple lines)
+  return trimmed
+    .replace(/\n/g, ',')
+    .split(',')
+    .map(k => k.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+// ---------------------------------------------------------------------------
+// Main Parsing Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a single agent markdown file into a structured object.
+ *
+ * Expected markdown structure:
+ * ```
+ * # Agent Name
+ * ## Role
+ * ## Expertise
+ * ## Design Principles
+ * ## Guidelines
+ * ### Subsection 1
+ * ### Subsection 2
+ * ## Checklist
+ * ## Anti-patterns
+ * ## Keywords
+ * ```
+ *
+ * @param {string} filePath - Absolute path to the agent .md file
+ * @returns {{ name: string, role: string, expertise: string[], principles: { number: number, title: string, description: string }[], guidelines: Record<string, string>, checklist: { text: string, checked: boolean }[], antiPatterns: string[], keywords: string[] }}
+ */
+function parseAgentFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Agent file not found: ${filePath}`);
+  }
+
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const name = path.basename(filePath, '.md');
+  const sections = splitSections(content);
+
+  const agent = {
+    name,
+    role: '',
+    expertise: [],
+    principles: [],
+    guidelines: {},
+    checklist: [],
+    antiPatterns: [],
+    keywords: [],
+  };
+
+  for (const section of sections) {
+    const heading = section.heading.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim();
+
+    if (heading === 'role' || heading === 'description') {
+      // Role section: return the paragraph text
+      agent.role = section.body.replace(/\n+/g, ' ').trim();
+    } else if (heading === 'expertise' || heading === 'areas of expertise' || heading === 'specializations') {
+      agent.expertise = parseBulletPoints(section.body);
+    } else if (heading === 'design principles' || heading === 'principles' || heading === 'core principles') {
+      // Try numbered list first, fall back to bullet points
+      const numbered = parseNumberedList(section.body);
+      if (numbered.length > 0) {
+        agent.principles = numbered;
+      } else {
+        const bullets = parseBulletPoints(section.body);
+        agent.principles = bullets.map((text, i) => ({
+          number: i + 1,
+          title: text,
+          description: '',
+        }));
+      }
+    } else if (heading === 'guidelines' || heading === 'design guidelines' || heading === 'rules') {
+      // Parse ### subsections within guidelines
+      agent.guidelines = parseSubsections(section.body);
+      // If no subsections found, store as a single entry
+      if (Object.keys(agent.guidelines).length === 0 && section.body.trim()) {
+        agent.guidelines['_general'] = section.body.trim();
+      }
+    } else if (heading === 'checklist' || heading === 'review checklist' || heading === 'design checklist') {
+      agent.checklist = parseChecklist(section.body);
+      // If no checkbox items found, try bullet points
+      if (agent.checklist.length === 0) {
+        const bullets = parseBulletPoints(section.body);
+        agent.checklist = bullets.map(text => ({ text, checked: false }));
+      }
+    } else if (heading === 'anti-patterns' || heading === 'antipatterns' || heading === 'common mistakes' || heading === 'pitfalls') {
+      agent.antiPatterns = parseBulletPoints(section.body);
+    } else if (heading === 'keywords' || heading === 'tags' || heading === 'topics') {
+      agent.keywords = parseKeywords(section.body);
+    }
+  }
+
+  return agent;
+}
+
+/**
+ * Load all agent markdown files from a directory.
+ *
+ * @param {string} [agentsDir] - Path to the agents directory.
+ *   Defaults to path.join(__dirname, '../../agents')
+ * @returns {Map<string, object>} Map of agent name to parsed agent object
+ */
+function loadAgents(agentsDir) {
+  const dir = agentsDir || path.join(__dirname, '../../agents');
+
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Agents directory not found: ${dir}`);
+  }
+
+  const agents = new Map();
+  let entries;
+
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch (err) {
+    throw new Error(`Failed to read agents directory: ${err.message}`);
+  }
+
+  for (const entry of entries) {
+    if (!entry.isFile()) continue;
+    if (path.extname(entry.name).toLowerCase() !== '.md') continue;
+
+    const filePath = path.join(dir, entry.name);
+    try {
+      const agent = parseAgentFile(filePath);
+      agents.set(agent.name, agent);
+    } catch (err) {
+      // Log but don't fail — skip malformed agent files
+      console.warn(`Warning: Failed to parse agent file ${entry.name}: ${err.message}`);
+    }
+  }
+
+  return agents;
+}
+
+module.exports = {
+  loadAgents,
+  parseAgentFile,
+  // Export utilities for testing
+  splitSections,
+  parseBulletPoints,
+  parseNumberedList,
+  parseSubsections,
+  parseChecklist,
+  parseKeywords,
+};

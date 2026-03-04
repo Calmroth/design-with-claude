@@ -1,273 +1,363 @@
 /**
- * AgentKnowledge — transforms selected agents' content into structured
- * guidance that generators can consume deterministically.
+ * Agent Knowledge - Extracts specific guidance from selected design agents.
+ *
+ * Takes selected agents (primary + supporting) and a project context,
+ * then filters, merges, and deduplicates their guidance into a unified
+ * set of recommendations, checklist items, anti-patterns, and principles.
+ *
+ * @module agent-knowledge
  */
 
-/**
- * Maps agent names to the guidance fields they can populate.
- * Each entry is a function that reads the agent's parsed data and returns
- * partial guidance to be merged into the final AgentGuidance object.
- */
-const EXTRACTION_MAP = {
-  'ui-designer': (agent) => ({
-    colorGuidance: {
-      contrast: 'high',
-      darkMode: agentMentions(agent, ['dark mode', 'theming'])
-    },
-    typographyGuidance: {
-      style: 'modern',
-      scale: extractScaleHint(agent)
-    },
-    layoutGuidance: {
-      gridColumns: 12,
-      responsiveBreakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1280px' }
-    },
-    componentGuidance: {
-      borderRadius: 'md',
-      accessibilityRequirements: []
-    }
-  }),
+// ---------------------------------------------------------------------------
+// Priority Levels
+// ---------------------------------------------------------------------------
 
-  'visual-designer': (agent) => ({
-    colorGuidance: {
-      mood: extractMoodFromExpertise(agent),
-      contrast: 'high'
-    },
-    typographyGuidance: {
-      style: 'expressive'
-    }
-  }),
-
-  'brand-strategist': (agent) => ({
-    colorGuidance: {
-      mood: 'brand-aligned'
-    },
-    typographyGuidance: {
-      style: 'distinctive'
-    }
-  }),
-
-  'design-system-architect': (agent) => ({
-    componentGuidance: {
-      borderRadius: 'md',
-      shadowDepth: 'layered',
-      buttonVariants: ['primary', 'secondary', 'ghost', 'outline', 'destructive']
-    },
-    layoutGuidance: {
-      maxWidth: '1280px',
-      gutterSize: '24px'
-    }
-  }),
-
-  'accessibility-specialist': (agent) => ({
-    colorGuidance: {
-      contrast: 'AAA'
-    },
-    componentGuidance: {
-      accessibilityRequirements: [
-        'ARIA labels on all interactive elements',
-        'Keyboard navigation support',
-        'Focus indicators visible',
-        'Color contrast ratio >= 4.5:1',
-        'Touch targets >= 44px'
-      ],
-      borderRadius: 'md'
-    }
-  }),
-
-  'motion-designer': (agent) => ({
-    componentGuidance: {
-      animationDurations: {
-        micro: '150ms',
-        short: '200ms',
-        medium: '300ms',
-        long: '400ms'
-      },
-      transitions: {
-        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        hover: '150ms ease-in-out',
-        expand: '300ms ease-out'
-      }
-    }
-  }),
-
-  'dashboard-designer': (agent) => ({
-    layoutGuidance: {
-      gridColumns: 12,
-      maxWidth: '1440px',
-      gutterSize: '24px',
-      responsiveBreakpoints: { sm: '640px', md: '768px', lg: '1024px', xl: '1440px' }
-    },
-    componentGuidance: {
-      shadowDepth: 'subtle',
-      borderRadius: 'lg'
-    }
-  }),
-
-  'mobile-designer': (agent) => ({
-    layoutGuidance: {
-      responsiveBreakpoints: { sm: '320px', md: '375px', lg: '414px', xl: '768px' }
-    },
-    componentGuidance: {
-      borderRadius: 'lg',
-      accessibilityRequirements: ['Touch targets >= 44px']
-    }
-  }),
-
-  'web-designer': (agent) => ({
-    layoutGuidance: {
-      gridColumns: 12,
-      maxWidth: '1280px',
-      gutterSize: '24px'
-    }
-  }),
-
-  'healthcare-ux': (agent) => ({
-    colorGuidance: {
-      contrast: 'AAA',
-      mood: 'clinical-trustworthy'
-    },
-    componentGuidance: {
-      accessibilityRequirements: [
-        'HIPAA-compliant data display',
-        'High contrast mode support',
-        'Screen reader optimized',
-        'Error prevention for critical actions'
-      ],
-      borderRadius: 'md'
-    }
-  }),
-
-  'interaction-designer': (agent) => ({
-    componentGuidance: {
-      animationDurations: {
-        micro: '150ms',
-        short: '250ms',
-        medium: '350ms'
-      }
-    }
-  }),
-
-  'icon-designer': (agent) => ({
-    componentGuidance: {
-      iconStyle: 'consistent-stroke'
-    }
-  }),
-
-  'game-ui-designer': (agent) => ({
-    colorGuidance: {
-      mood: 'vibrant-immersive'
-    },
-    componentGuidance: {
-      animationDurations: {
-        micro: '100ms',
-        short: '150ms',
-        medium: '250ms'
-      }
-    }
-  }),
-
-  'product-designer': (agent) => ({
-    layoutGuidance: {
-      maxWidth: '1280px'
-    }
-  })
+/** @enum {string} */
+const PRIORITY = {
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low',
 };
 
-/**
- * Check if an agent's expertise or sections mention specific terms.
- */
-function agentMentions(agent, terms) {
-  const text = [agent.intro, ...agent.coreExpertise, ...agent.bestPractices]
-    .join(' ').toLowerCase();
-  return terms.some(t => text.includes(t.toLowerCase()));
-}
+// ---------------------------------------------------------------------------
+// Relevance Filtering
+// ---------------------------------------------------------------------------
 
 /**
- * Extract a typography scale hint from an agent's content.
+ * Determine if a text string is relevant to the given context.
+ * Uses keyword overlap to estimate relevance.
+ *
+ * @param {string} text - Text to evaluate
+ * @param {{ description?: string, concerns?: string[], componentType?: string, industry?: string }} context
+ * @returns {boolean}
  */
-function extractScaleHint(agent) {
-  const text = agent.rawMarkdown.toLowerCase();
-  if (text.includes('1.5') || text.includes('major third')) return 'major-third';
-  if (text.includes('1.33') || text.includes('perfect fourth')) return 'perfect-fourth';
-  if (text.includes('1.25') || text.includes('minor third')) return 'minor-third';
-  return 'default';
-}
+function isRelevant(text, context) {
+  if (!text) return false;
+  if (!context) return true; // No context means include everything
 
-/**
- * Derive a mood hint from a visual-design agent's expertise list.
- */
-function extractMoodFromExpertise(agent) {
-  const text = agent.coreExpertise.join(' ').toLowerCase();
-  if (text.includes('storytelling') || text.includes('narrative')) return 'narrative';
-  if (text.includes('minimal')) return 'minimal';
-  if (text.includes('bold') || text.includes('vibrant')) return 'vibrant';
-  return 'balanced';
-}
+  const lowerText = text.toLowerCase();
 
-/**
- * Deep-merge two guidance objects. Arrays are concatenated and de-duped.
- */
-function mergeGuidance(base, patch) {
-  const result = { ...base };
-  for (const [key, value] of Object.entries(patch)) {
-    if (value === undefined || value === null) continue;
-    if (Array.isArray(value)) {
-      result[key] = [...new Set([...(base[key] || []), ...value])];
-    } else if (typeof value === 'object' && !Array.isArray(value)) {
-      result[key] = mergeGuidance(base[key] || {}, value);
-    } else {
-      result[key] = value;
+  // Always relevant if it mentions accessibility (universal concern)
+  if (/\baccessib/i.test(lowerText) || /\bwcag\b/i.test(lowerText) || /\baria\b/i.test(lowerText)) {
+    return true;
+  }
+
+  // Check against concerns
+  if (context.concerns && context.concerns.length > 0) {
+    for (const concern of context.concerns) {
+      if (lowerText.includes(concern.toLowerCase())) return true;
     }
   }
-  return result;
+
+  // Check against component type
+  if (context.componentType && lowerText.includes(context.componentType.toLowerCase())) {
+    return true;
+  }
+
+  // Check against description keywords
+  if (context.description) {
+    const descWords = context.description.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    const matchCount = descWords.filter(w => lowerText.includes(w)).length;
+    if (matchCount >= 2) return true;
+  }
+
+  // Check against industry
+  if (context.industry && lowerText.includes(context.industry.toLowerCase())) {
+    return true;
+  }
+
+  // If no specific filter matched but text is short, include it anyway
+  // (short checklist items are usually universally applicable)
+  if (text.length < 80) return true;
+
+  return false;
 }
 
-class AgentKnowledge {
-  /**
-   * Extract structured guidance from an array of selected agents.
-   *
-   * @param {SelectedAgent[]} selectedAgents - Output from AgentSelector.select()
-   * @returns {AgentGuidance}
-   */
-  extract(selectedAgents) {
-    let guidance = {
-      colorGuidance: {},
-      typographyGuidance: {},
-      componentGuidance: {},
-      layoutGuidance: {},
-      bestPractices: [],
-      agentNotes: []
-    };
+/**
+ * Compute a similarity score between two text strings using word overlap.
+ * Returns a value between 0 and 1.
+ *
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @returns {number} Similarity score (0-1)
+ */
+function textSimilarity(a, b) {
+  if (!a || !b) return 0;
 
-    for (const { agent, role } of selectedAgents) {
-      const extractor = EXTRACTION_MAP[agent.name];
+  const wordsA = new Set(a.toLowerCase().split(/\s+/).filter(w => w.length > 2));
+  const wordsB = new Set(b.toLowerCase().split(/\s+/).filter(w => w.length > 2));
 
-      if (extractor) {
-        const partial = extractor(agent);
-        guidance = mergeGuidance(guidance, partial);
+  if (wordsA.size === 0 || wordsB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const word of wordsA) {
+    if (wordsB.has(word)) intersection++;
+  }
+
+  const union = new Set([...wordsA, ...wordsB]).size;
+  return intersection / union; // Jaccard similarity
+}
+
+/**
+ * Deduplicate a list of text items, removing entries that are too similar.
+ * @param {{ text: string, source: string }[]} items - Items to deduplicate
+ * @param {number} [threshold=0.6] - Similarity threshold for deduplication
+ * @returns {{ text: string, source: string }[]}
+ */
+function deduplicateItems(items, threshold) {
+  const similarityThreshold = threshold || 0.6;
+  const unique = [];
+
+  for (const item of items) {
+    const isDuplicate = unique.some(
+      existing => textSimilarity(existing.text, item.text) >= similarityThreshold
+    );
+    if (!isDuplicate) {
+      unique.push(item);
+    }
+  }
+
+  return unique;
+}
+
+// ---------------------------------------------------------------------------
+// Guidance Extraction
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract guidelines content from an agent's guidelines object.
+ * Filters to only relevant subsections based on context.
+ *
+ * @param {Record<string, string>} guidelines - Agent guidelines (subsection key -> content)
+ * @param {string} agentName - Name of the agent
+ * @param {object} context - Project context
+ * @returns {{ text: string, source: string, priority: string }[]}
+ */
+function extractGuidelinesRecommendations(guidelines, agentName, context) {
+  const recommendations = [];
+
+  if (!guidelines) return recommendations;
+
+  for (const [subsection, content] of Object.entries(guidelines)) {
+    if (!content || !content.trim()) continue;
+
+    // Split content into individual points (by line or bullet)
+    const points = content
+      .split('\n')
+      .map(line => line.replace(/^\s*[-*]\s*/, '').trim())
+      .filter(line => line.length > 0);
+
+    for (const point of points) {
+      if (isRelevant(point, context)) {
+        // Determine priority based on keywords in the content
+        let priority = PRIORITY.MEDIUM;
+        if (/\bmust\b|\brequired\b|\bcritical\b|\bessential\b|\balways\b/i.test(point)) {
+          priority = PRIORITY.HIGH;
+        } else if (/\bconsider\b|\bmay\b|\boptional\b|\bnice.to.have\b/i.test(point)) {
+          priority = PRIORITY.LOW;
+        }
+
+        recommendations.push({
+          text: `According to ${agentName}: ${point}`,
+          source: agentName,
+          priority,
+        });
+      }
+    }
+  }
+
+  return recommendations;
+}
+
+/**
+ * Extract checklist items from an agent.
+ * @param {{ text: string, checked: boolean }[]} checklist - Agent checklist
+ * @param {string} agentName - Name of the agent
+ * @param {object} context - Project context
+ * @returns {{ item: string, source: string, category: string }[]}
+ */
+function extractChecklistItems(checklist, agentName, context) {
+  const items = [];
+
+  if (!checklist) return items;
+
+  for (const check of checklist) {
+    if (isRelevant(check.text, context)) {
+      // Infer category from the checklist item text
+      let category = 'general';
+      const lowerText = check.text.toLowerCase();
+
+      if (/\bcolor\b|\bcontrast\b|\bpalette\b/i.test(lowerText)) {
+        category = 'color';
+      } else if (/\bspacing\b|\bpadding\b|\bmargin\b|\blayout\b|\balignment\b/i.test(lowerText)) {
+        category = 'spacing';
+      } else if (/\bfont\b|\btypograph\b|\btext\b|\bheading\b|\breadab/i.test(lowerText)) {
+        category = 'typography';
+      } else if (/\banimation\b|\btransition\b|\bmotion\b/i.test(lowerText)) {
+        category = 'motion';
+      } else if (/\baccessib\b|\baria\b|\bwcag\b|\bscreen.reader\b|\bkeyboard\b/i.test(lowerText)) {
+        category = 'accessibility';
+      } else if (/\brespons\b|\bmobile\b|\bbreakpoint\b|\btouch\b/i.test(lowerText)) {
+        category = 'responsive';
+      } else if (/\bperform\b|\boptimiz\b|\bload\b|\bspeed\b|\bbundle\b/i.test(lowerText)) {
+        category = 'performance';
+      } else if (/\bdark\b|\btheme\b|\blight\b|\bmode\b/i.test(lowerText)) {
+        category = 'theming';
+      } else if (/\bform\b|\binput\b|\bvalidat\b|\blabel\b|\bfield\b/i.test(lowerText)) {
+        category = 'forms';
+      } else if (/\bcomponent\b|\breusab\b|\bpattern\b|\bconsisten/i.test(lowerText)) {
+        category = 'components';
+      } else if (/\bstate\b|\berror\b|\bloading\b|\bempty\b|\bfeedback\b/i.test(lowerText)) {
+        category = 'states';
       }
 
-      // Collect best practices from all selected agents
-      if (agent.bestPractices && agent.bestPractices.length > 0) {
-        guidance.bestPractices.push(...agent.bestPractices.slice(0, 3));
-      }
-
-      // Add a short note per agent
-      guidance.agentNotes.push({
-        agent: agent.name,
-        role,
-        note: agent.intro.slice(0, 150)
+      items.push({
+        item: check.text,
+        source: agentName,
+        category,
       });
     }
-
-    // De-dup best practices
-    guidance.bestPractices = [...new Set(guidance.bestPractices)];
-
-    return guidance;
   }
+
+  return items;
 }
 
-module.exports = AgentKnowledge;
-module.exports.mergeGuidance = mergeGuidance;
-module.exports.EXTRACTION_MAP = EXTRACTION_MAP;
+/**
+ * Extract anti-patterns from an agent.
+ * @param {string[]} antiPatterns - Agent anti-patterns
+ * @param {string} agentName - Name of the agent
+ * @returns {{ pattern: string, source: string }[]}
+ */
+function extractAntiPatterns(antiPatterns, agentName) {
+  if (!antiPatterns) return [];
+
+  return antiPatterns.map(pattern => ({
+    pattern: pattern,
+    source: agentName,
+  }));
+}
+
+/**
+ * Extract principles from an agent.
+ * @param {{ number: number, title: string, description: string }[]} principles - Agent principles
+ * @param {string} agentName - Name of the agent
+ * @returns {{ text: string, source: string }[]}
+ */
+function extractPrinciples(principles, agentName) {
+  if (!principles) return [];
+
+  return principles.map(p => ({
+    text: p.description ? `${p.title}: ${p.description}` : p.title,
+    source: agentName,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Main Extraction Function
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract unified guidance from selected agents (primary + supporting).
+ *
+ * Filters agent guidelines to only relevant subsections,
+ * merges checklists from all selected agents, deduplicates similar
+ * recommendations, and adds agent attribution.
+ *
+ * @param {{ primary: object, supporting: object[] }} agents - Selected agents
+ * @param {{ description?: string, concerns?: string[], componentType?: string, industry?: string }} context - Project context
+ * @returns {{ recommendations: { text: string, source: string, priority: string }[], checklist: { item: string, source: string, category: string }[], antiPatterns: { pattern: string, source: string }[], principles: { text: string, source: string }[] }}
+ */
+function extractGuidance(agents, context) {
+  if (!agents || !agents.primary) {
+    throw new Error('No agents provided for guidance extraction');
+  }
+
+  const allAgents = [agents.primary, ...(agents.supporting || [])];
+  const ctx = context || {};
+
+  let allRecommendations = [];
+  let allChecklist = [];
+  let allAntiPatterns = [];
+  let allPrinciples = [];
+
+  for (let i = 0; i < allAgents.length; i++) {
+    const agent = allAgents[i];
+    if (!agent) continue;
+
+    const agentName = agent.name || `agent-${i}`;
+
+    // Extract recommendations from guidelines
+    const recommendations = extractGuidelinesRecommendations(
+      agent.guidelines,
+      agentName,
+      ctx
+    );
+
+    // Boost primary agent's recommendations to high priority
+    if (i === 0) {
+      for (const rec of recommendations) {
+        if (rec.priority === PRIORITY.MEDIUM) {
+          rec.priority = PRIORITY.HIGH;
+        }
+      }
+    }
+
+    allRecommendations.push(...recommendations);
+
+    // Extract checklist items
+    allChecklist.push(...extractChecklistItems(agent.checklist, agentName, ctx));
+
+    // Extract anti-patterns
+    allAntiPatterns.push(...extractAntiPatterns(agent.antiPatterns, agentName));
+
+    // Extract principles
+    allPrinciples.push(...extractPrinciples(agent.principles, agentName));
+  }
+
+  // Deduplicate recommendations
+  const dedupedRecs = deduplicateItems(
+    allRecommendations.map(r => ({ text: r.text, source: r.source, extra: r })),
+    0.6
+  ).map(d => d.extra);
+
+  // Deduplicate checklist items
+  const dedupedChecklist = deduplicateItems(
+    allChecklist.map(c => ({ text: c.item, source: c.source, extra: c })),
+    0.6
+  ).map(d => d.extra);
+
+  // Deduplicate anti-patterns
+  const dedupedAntiPatterns = deduplicateItems(
+    allAntiPatterns.map(a => ({ text: a.pattern, source: a.source, extra: a })),
+    0.6
+  ).map(d => d.extra);
+
+  // Deduplicate principles
+  const dedupedPrinciples = deduplicateItems(allPrinciples, 0.6);
+
+  // Sort recommendations by priority
+  const priorityOrder = { [PRIORITY.HIGH]: 0, [PRIORITY.MEDIUM]: 1, [PRIORITY.LOW]: 2 };
+  dedupedRecs.sort((a, b) => (priorityOrder[a.priority] || 1) - (priorityOrder[b.priority] || 1));
+
+  // Sort checklist by category for better organization
+  dedupedChecklist.sort((a, b) => a.category.localeCompare(b.category));
+
+  return {
+    recommendations: dedupedRecs,
+    checklist: dedupedChecklist,
+    antiPatterns: dedupedAntiPatterns,
+    principles: dedupedPrinciples,
+  };
+}
+
+module.exports = {
+  extractGuidance,
+  // Export utilities for testing
+  isRelevant,
+  textSimilarity,
+  deduplicateItems,
+  extractGuidelinesRecommendations,
+  extractChecklistItems,
+  extractAntiPatterns,
+  extractPrinciples,
+};
