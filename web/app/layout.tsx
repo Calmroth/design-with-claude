@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Design with Claude - AI-Powered Design Agents",
-  description: "28 specialized design agents for Claude AI to enhance your design workflow. From UI/UX to brand strategy, get expert design assistance.",
+  title: "Design with Claude — 30 Design Agents for Claude Code",
+  description: "29 specialist agents + 1 master command as Claude Code slash commands. Accessibility, design systems, motion, color, checkout, dashboards and more.",
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },

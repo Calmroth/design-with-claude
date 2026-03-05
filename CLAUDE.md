@@ -39,6 +39,13 @@ Commands use pure role-based names (e.g., `accessibility-specialist`, `motion-de
 
 ## Recent Sessions
 
+### Session 2026-03-05 16:19 (MacBook)
+- **Pattern:** Landing page update
+- **Status:** Complete
+- **Files Changed:** 2
+- **Tests Added/Modified:** 0
+- **Notes:** Rewrote landing page to reflect CLI→Claude Code plugin pivot. Updated metadata, HomeView (slash command examples), InstallView (3 install methods: plugin/standalone/project-local), and HowItWorksView (what you get, /design-brief example output, all 29 specialists grouped). Removed obsolete Phase 1-4 roadmap.
+
 ### Session 2026-03-04 20:06 (MacBook)
 - **Pattern:** Plugin packaging and README polish
 - **Status:** Complete

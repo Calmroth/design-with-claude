@@ -14,7 +14,7 @@ export default function Home() {
 
       {/* Subtitle */}
       <p className="hero-subtitle">
-        Specialized AI agents for every design challenge + CLI tool that generates real code. From guidance to implementation, powered by Claude AI.
+        29 specialist agents + 1 master command — available as a Claude Code plugin. Deep domain knowledge for every design challenge.
       </p>
 
       {/* CTA Buttons */}
@@ -36,20 +36,20 @@ export default function Home() {
       {/* Code Example */}
       <div className="code-example">
         <div className="code-line">
-          <span className="prompt">$</span>
-          <span className="command">git clone github.com/design-with-claude</span>
+          <span className="prompt">&gt;</span>
+          <span className="command">/plugin marketplace add imsaif/design-with-claude</span>
         </div>
         <div className="code-line">
-          <span className="prompt">$</span>
-          <span className="command">@ui-designer Create a modern dashboard</span>
+          <span className="prompt">&gt;</span>
+          <span className="command">/design-brief SaaS analytics dashboard with dark mode</span>
         </div>
         <div className="code-line">
-          <span className="prompt">$</span>
-          <span className="command">design-create init my-project</span>
+          <span className="prompt">&gt;</span>
+          <span className="command">/accessibility-specialist Audit this login form for WCAG AA</span>
         </div>
         <div className="code-line">
-          <span className="prompt">$</span>
-          <span className="command">design-create component button --variants</span>
+          <span className="prompt">&gt;</span>
+          <span className="command">/motion-designer Transition specs for modal and dropdown</span>
         </div>
       </div>
     </>
@@ -73,87 +73,50 @@ export default function Home() {
       {/* Installation sections */}
       <div className="install-sections">
         <div className="install-section">
-          <h3 className="install-section-title">Clone and Use</h3>
+          <h3 className="install-section-title">As a Plugin (recommended)</h3>
           <div className="code-example">
             <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">git clone https://github.com/imsaif/design-with-claude.git</span>
+              <span className="prompt">&gt;</span>
+              <span className="command">/plugin marketplace add imsaif/design-with-claude</span>
             </div>
             <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">cd design-with-claude</span>
+              <span className="prompt">&gt;</span>
+              <span className="command">/plugin install design-with-claude@design-with-claude</span>
             </div>
           </div>
-        </div>
-
-        <div className="install-section">
-          <h3 className="install-section-title">User-wide Installation</h3>
-          <div className="code-example">
-            <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">git clone https://github.com/imsaif/design-with-claude.git</span>
-            </div>
-            <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">cd design-with-claude</span>
-            </div>
-            <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">cp -r agents/* ~/.claude/agents/</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="install-section">
-          <h3 className="install-section-title">Project-specific Installation</h3>
-          <div className="code-example">
-            <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">cd your-project</span>
-            </div>
-            <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">cp -r path/to/design-with-claude/agents/* .claude/agents/</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="install-section">
-          <h3 className="install-section-title">Web Interface</h3>
           <p className="install-description">
-            Simply copy the content of any agent file and paste it at the beginning of your Claude conversation.
+            Commands are namespaced: <code style={{ color: '#00FF88' }}>/design-with-claude:design-brief</code>, <code style={{ color: '#00FF88' }}>/design-with-claude:accessibility-specialist</code>, etc.
           </p>
         </div>
 
         <div className="install-section">
-          <h3 className="install-section-title">CLI Tool Setup (NEW!)</h3>
+          <h3 className="install-section-title">As Standalone Commands</h3>
           <div className="code-example">
             <div className="code-line">
               <span className="prompt">$</span>
-              <span className="command">npm install</span>
+              <span className="command">git clone https://github.com/imsaif/design-with-claude.git ~/.design-with-claude</span>
             </div>
             <div className="code-line">
               <span className="prompt">$</span>
-              <span className="command">node bin/design-create.js init my-project</span>
-            </div>
-            <div className="code-line">
-              <span className="prompt">$</span>
-              <span className="command">cd my-project</span>
+              <span className="command">cp -r ~/.design-with-claude/commands/ ~/.claude/commands/</span>
             </div>
           </div>
           <p className="install-description">
-            The CLI tool generates actual code files, components, and design tokens using agent intelligence.
+            Gives shorter names: <code style={{ color: '#00FF88' }}>/design-brief</code>, <code style={{ color: '#00FF88' }}>/accessibility-specialist</code>, etc.
           </p>
         </div>
 
         <div className="install-section">
-          <h3 className="install-section-title">Verify Installation</h3>
+          <h3 className="install-section-title">Project-Local</h3>
           <div className="code-example">
             <div className="code-line">
               <span className="prompt">$</span>
-              <span className="command">ls ~/.claude/agents/</span>
+              <span className="command">cp -r ~/.design-with-claude/commands/ your-project/.claude/commands/</span>
             </div>
           </div>
+          <p className="install-description">
+            Commands available only within this project.
+          </p>
         </div>
       </div>
     </>
@@ -172,75 +135,86 @@ export default function Home() {
       </div>
 
       {/* How It Works title */}
-      <h2 className="install-title">How Agent Intelligence Powers Generation</h2>
+      <h2 className="install-title">How It Works</h2>
 
       {/* How It Works sections */}
       <div className="install-sections">
         <div className="install-section">
-          <h3 className="install-section-title">Dual System Overview</h3>
+          <h3 className="install-section-title">What You Get</h3>
           <div className="code-example">
             <pre style={{ fontSize: '12px', lineHeight: '1.4', margin: 0, color: '#FFFFFF' }}>
-              {`┌────────────────────────┬─────────────────────────┐
-│   28 DESIGN AGENTS     │   CLI GENERATOR         │
-│   Provide Expertise    │   Creates Real Code     │
-│   Give Guidance        │   Builds Components     │
-└────────────────────────┴─────────────────────────┘
-              ↓                    ↓
-         Guidance              Implementation`}
+              {`┌─────────────────────────────────────────────┐
+│         30 SLASH COMMANDS                   │
+│                                             │
+│   Each one a design specialist              │
+│   Deep domain knowledge, not generic prompts│
+│   No runtime · No dependencies · Just .md   │
+└─────────────────────────────────────────────┘`}
             </pre>
           </div>
         </div>
 
         <div className="install-section">
-          <h3 className="install-section-title">Intelligent Flow</h3>
-          <p className="install-description">
-            When you run a command, agents analyze your brief → select expert agents → guide generation → produce quality code with best practices built-in.
-          </p>
+          <h3 className="install-section-title">Example: /design-brief</h3>
           <div className="code-example">
-            <pre style={{ fontSize: '11px', lineHeight: '1.4', margin: 0, color: '#FFFFFF' }}>
-              {`Input: design-create from-brief "Modern SaaS landing"
-                    ↓
-              Brief Parser
-                    ↓
-            Agent Selection
-        web-designer + ui-designer + brand-strategist
-                    ↓
-           Expert Guidance Applied
-                    ↓
-        Generated: Hero.jsx + Button.css + tokens.json`}
+            <div className="code-line" style={{ marginBottom: '8px' }}>
+              <span className="prompt">&gt;</span>
+              <span className="command">/design-brief SaaS analytics dashboard with dark mode</span>
+            </div>
+          </div>
+          <div className="code-example" style={{ marginTop: '8px' }}>
+            <pre style={{ fontSize: '11px', lineHeight: '1.5', margin: 0, color: '#A0A0A0' }}>
+              {`📋 DESIGN BRIEF ANALYSIS
+
+Relevant domains identified:
+  → dashboard-designer (primary)
+  → dark-mode-specialist
+  → data-visualization-designer
+  → typography-specialist
+
+Token recommendations:
+  Color: Dark neutral base, accent palette for data
+  Spacing: 8px grid, dense information layout
+  Typography: System font stack, tabular numbers
+
+Component specs:
+  → Sidebar navigation with collapsible sections
+  → Metric cards with sparkline charts
+  → Data table with sort/filter/pagination
+  → Chart containers with responsive breakpoints
+
+Suggested workflow:
+  1. /dark-mode-specialist  — color system + contrast
+  2. /dashboard-designer    — layout + component specs
+  3. /data-visualization-designer — chart guidelines`}
             </pre>
           </div>
         </div>
 
         <div className="install-section">
-          <h3 className="install-section-title">Agent Selection Examples</h3>
+          <h3 className="install-section-title">All 29 Specialists</h3>
           <div className="code-example">
-            <div className="code-line" style={{ marginBottom: '8px' }}>
-              <span className="prompt">$</span>
-              <span className="command">design-create component button</span>
-            </div>
-            <div className="install-description" style={{ marginLeft: '20px', marginBottom: '12px', fontSize: '13px', color: '#A0A0A0' }}>
-              → Uses: ui-designer + accessibility-specialist
-            </div>
-            <div className="code-line" style={{ marginBottom: '8px' }}>
-              <span className="prompt">$</span>
-              <span className="command">design-create from-brief &quot;Healthcare dashboard&quot;</span>
-            </div>
-            <div className="install-description" style={{ marginLeft: '20px', fontSize: '13px', color: '#A0A0A0' }}>
-              → Uses: dashboard-designer + healthcare-ux + accessibility-specialist
-            </div>
-          </div>
-        </div>
+            <pre style={{ fontSize: '11px', lineHeight: '1.6', margin: 0, color: '#FFFFFF' }}>
+              {`CORE
+  visual-hierarchy · interaction · design-system
+  accessibility
 
-        <div className="install-section">
-          <h3 className="install-section-title">Development Status</h3>
-          <div className="code-example">
-            <div style={{ fontSize: '13px', lineHeight: '1.6' }}>
-              <div style={{ color: '#00FF88' }}>✅ Phase 1: CLI Foundation - Complete</div>
-              <div style={{ color: '#00FF88' }}>✅ Phase 2: Agent Integration - Complete</div>
-              <div style={{ color: '#0099FF' }}>🔄 Phase 3: Export System - In Progress</div>
-              <div style={{ color: '#888888' }}>⏳ Phase 4: Figma Integration - Coming Soon</div>
-            </div>
+VISUAL
+  typography · color · spacing-layout
+
+INTERACTION
+  motion · form · navigation
+
+PRODUCT
+  dashboard · mobile · responsive · landing-page
+
+SPECIALIZED
+  dark-mode · error-handling · onboarding
+  performance · data-viz · table · search
+  healthcare · b2b-saas · ecommerce · checkout
+  brand · content · information-architecture
+  conversational-ui`}
+            </pre>
           </div>
         </div>
       </div>
