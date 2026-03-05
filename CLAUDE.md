@@ -1,15 +1,18 @@
 # design-with-claude
 
 ## Project Overview
-29 specialized design agents packaged as Claude Code custom slash commands. Each command file in `.claude/commands/` becomes a `/command-name` in any Claude Code session — no runtime, no dependencies, no build step.
+29 specialized design agents packaged as Claude Code custom slash commands. Available as a Claude Code plugin or standalone commands — no runtime, no dependencies, no build step.
 
 ## Architecture
 - **No code. Just markdown.** Each agent is a `.md` file with YAML frontmatter + structured design knowledge.
-- Users install via `claude config add commandDirs` — the commands directory is the entire product.
+- Distributed as a Claude Code plugin via `.claude-plugin/plugin.json` manifest.
+- Also installable standalone by copying `commands/` to `~/.claude/commands/`.
 - `/design-brief` is the master command that routes a natural language brief to the relevant agents.
 
 ## Key Files
-- `.claude/commands/*.md` — 29 agent commands + 1 master command (design-brief)
+- `.claude-plugin/plugin.json` — Plugin manifest (name, version, metadata)
+- `.claude-plugin/marketplace.json` — Marketplace catalog for plugin distribution
+- `commands/*.md` — 29 agent commands + 1 master command (design-brief)
 - `agents/*.md` — Source agent files (reference/archive)
 - `README.md` — Install instructions, command reference, examples
 
@@ -35,6 +38,13 @@ Role statement with $ARGUMENTS placeholder
 Commands use pure role-based names (e.g., `accessibility-specialist`, `motion-designer`, `form-designer`). No `design-` prefix except for `design-brief` (the master command) and `design-system-architect`.
 
 ## Recent Sessions
+
+### Session 2026-03-04 20:06 (MacBook)
+- **Pattern:** Plugin packaging and README polish
+- **Status:** Complete
+- **Files Changed:** 34
+- **Tests Added/Modified:** 19
+- **Notes:** Added `.claude-plugin/plugin.json` and `marketplace.json` for Claude Code plugin distribution. Moved commands from `.claude/commands/` to `commands/` at repo root (plugin convention). Fixed invalid `claude config add commandDirs` install command — replaced with `cp -r` to `~/.claude/commands/`. Fixed 29 vs 30 count inconsistency. Added designwithclaude.com link and example output to README. Updated GitHub repo topics from old CLI-era tags to `claude-code`, `claude-code-plugin`, `design-agents`, etc.
 
 ### Session 2026-03-04 19:42 (MacBook)
 - **Pattern:** Claude Code plugin pivot
