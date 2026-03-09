@@ -12,23 +12,67 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://designwithclaude.com";
+const title = "Design with Claude — 29 Design Agents for Claude Code";
+const description =
+  "29 specialist design agents as Claude Code slash commands. Accessibility, design systems, motion, color, typography, checkout flows, dashboards and more. No runtime, no dependencies — just expert design guidance in your coding workflow.";
+
 export const metadata: Metadata = {
-  title: "Design with Claude — 30 Design Agents for Claude Code",
-  description: "29 specialist agents + 1 master command as Claude Code slash commands. Accessibility, design systems, motion, color, checkout, dashboards and more.",
-  icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-    other: [
-      { rel: 'icon', url: '/favicon.ico' },
+  title,
+  description,
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title,
+    description,
+    url: siteUrl,
+    siteName: "Design with Claude",
+    type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Design with Claude — 29 design agents for Claude Code",
+      },
     ],
   },
-  manifest: '/manifest.json',
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/og-image.png"],
+  },
+  keywords: [
+    "claude code plugin",
+    "design agents",
+    "ai design tools",
+    "accessibility",
+    "design system",
+    "ux design",
+    "ui design",
+    "claude code",
+    "slash commands",
+    "motion design",
+    "color theory",
+    "typography",
+  ],
+  authors: [{ name: "Imran", url: "https://www.imranaidesign.com" }],
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [{ rel: "icon", url: "/favicon.ico" }],
+  },
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
@@ -45,6 +89,30 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Design with Claude",
+              description,
+              url: siteUrl,
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Any",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              author: {
+                "@type": "Person",
+                name: "Imran",
+                url: "https://www.imranaidesign.com",
+              },
+            }),
+          }}
+        />
         {children}
         <footer className="simple-footer">
           <span>Built with ☕ by Imran</span>

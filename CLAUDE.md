@@ -39,6 +39,13 @@ Commands use pure role-based names (e.g., `accessibility-specialist`, `motion-de
 
 ## Recent Sessions
 
+### Session 2026-03-09 17:45 (MacBook)
+- **Pattern:** SEO and discoverability
+- **Status:** Complete
+- **Files Changed:** 4
+- **Tests Added/Modified:** 0
+- **Notes:** Added OG/Twitter meta tags, canonical URL, keywords, and JSON-LD structured data to layout.tsx. Created dynamic sitemap.ts and robots.ts. Fixed manifest.json agent count (28→29). Still needs OG image (1200x630px) at public/og-image.png.
+
 ### Session 2026-03-09 17:09 (MacBook)
 - **Pattern:** Repo cleanup and marketplace submission
 - **Status:** Complete
