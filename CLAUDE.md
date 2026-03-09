@@ -13,8 +13,8 @@
 - `.claude-plugin/plugin.json` — Plugin manifest (name, version, metadata)
 - `.claude-plugin/marketplace.json` — Marketplace catalog for plugin distribution
 - `commands/*.md` — 29 agent commands + 1 master command (design-brief)
-- `agents/*.md` — Source agent files (reference/archive)
 - `README.md` — Install instructions, command reference, examples
+- `web/` — Landing page (designwithclaude.com)
 
 ## Command File Structure
 Each command follows this format:
@@ -38,6 +38,13 @@ Role statement with $ARGUMENTS placeholder
 Commands use pure role-based names (e.g., `accessibility-specialist`, `motion-designer`, `form-designer`). No `design-` prefix except for `design-brief` (the master command) and `design-system-architect`.
 
 ## Recent Sessions
+
+### Session 2026-03-09 17:09 (MacBook)
+- **Pattern:** Repo cleanup and marketplace submission
+- **Status:** Complete
+- **Files Changed:** 100
+- **Tests Added/Modified:** 0
+- **Notes:** Removed all old CLI/MCP-era artifacts (bin/, src/, docs/, agents/, tests, package.json — 27,639 lines deleted). Added MIT LICENSE file. Updated GitHub repo description and homepage. Investigated marketplace submission: PRs to anthropics/claude-plugins-official are auto-closed — must use official form at claude.ai/settings/plugins/submit or platform.claude.com/plugins/submit.
 
 ### Session 2026-03-05 16:19 (MacBook)
 - **Pattern:** Landing page update
